@@ -4,9 +4,11 @@ from django.contrib.auth.models import User
 from .models import UserProfile, Student
 from django.contrib.auth import authenticate
 from django.views.generic import View
+from django.views.decorators.csrf import csrf_exempt
 
 
 class RegisterView(View):
+	@csrf_exempt
 	def post(self, request):
 		id_number = request.POST.get('id_number',None)
 		first_name = request.POST.get('first_name',None)
@@ -56,7 +58,7 @@ class RegisterView(View):
 
 
 class LoginView(View):
-
+	@csrf_exempt
 	def post(self, request):
 		print(request.body)
 
