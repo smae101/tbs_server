@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 
-# Create your models here.
+
 class Student(models.Model):
 	id_number = models.CharField(max_length=20)
 	first_name = models.CharField(max_length=255)
@@ -39,7 +39,7 @@ class Item(models.Model):
 		('donate','Donate'),
 	)
 
-	owner = models.ForeignKey(Student)
+	owner = models.ForeignKey(UserProfile, related_name='owner')
 	name = models.CharField(max_length=50)
 	description = models.CharField(max_length=500)
 	category = models.ForeignKey(Category)
@@ -47,57 +47,60 @@ class Item(models.Model):
 	purpose = models.CharField(max_length=10, choices=purpose_type)
 	price = models.FloatField()
 	picture = models.URLField()
-	stars_required = models.IntegerField()
+	stars_required = models.IntegerField(default=0)
 
 	def __str__(self):
-		return self.item_name
+		return self.name
 
 
 class ApprovalSellRequest(models.Model):
 	def expiry():
 		return datetime.now() + timedelta(days=3)
 
-	seller = models.ForeignKey(User)
+	seller = models.ForeignKey(UserProfile)
 	item = models.OneToOneField(Item)
 	request_date = models.DateTimeField(auto_now_add=True)
 	request_expiration = models.DateTimeField(default=expiry)
 
 	def __str__(self):
-		return self.item_id.item_name
+		return self.item.name
 
 
 class ApprovalDonateRequest(models.Model):
 	def expiry():
 		return datetime.now() + timedelta(days=3)
 
-	donor = models.ForeignKey(User)
+	donor = models.ForeignKey(UserProfile)
 	item = models.OneToOneField(Item)
 	request_date = models.DateTimeField(auto_now_add=True)
 	request_expiration = models.DateTimeField(default=expiry)
 
 	def __str__(self):
-		return self.item_id.item_name
+		return self.item.name
 
 
 class ReservationRequest(models.Model):
-	buyer = models.ForeignKey(User)
+	buyer = models.ForeignKey(UserProfile)
 	item = models.OneToOneField(Item)
 	reserved_date = models.DateTimeField()
 	request_expiration = models.DateTimeField()
 	status = models.CharField(max_length=10)
 
 	def __str__(self):
-		return self.item_id.item_name
+		return self.item.name
 
 
 class Transaction(models.Model):
 	item = models.OneToOneField(Item)
-	owner = models.ForeignKey(User,related_name="transactions_as_owner")
-	buyer = models.ForeignKey(User,related_name="transactions_as_buyer")
+	seller = models.ForeignKey(UserProfile,related_name="transactions_as_owner")
+	buyer = models.ForeignKey(UserProfile,related_name="transactions_as_buyer")
 	date_claimed = models.DateTimeField()
 
 	def __str__(self):
-		return self.id
+		return str(self.id)
+
+	class Meta:
+		ordering = '-date_claimed',
 
 
 class Notification(models.Model):
@@ -111,15 +114,15 @@ class Notification(models.Model):
 		('unread','Unread'),
 	)
 
-	user = models.ForeignKey(User, related_name='user')
-	admin = models.ForeignKey(User, related_name='admin')
+	target = models.ForeignKey(UserProfile, related_name='target')
+	item = models.ForeignKey(Item)
 	message = models.CharField(max_length=500)
-	notification_type = models.CharField(max_length=10,choices=notif_type)
-	item = models.OneToOneField(Item)
-	status = models.CharField(max_length=10,choices=status_type)
+	notification_type = models.CharField(max_length=10, choices=notif_type)
+	status = models.CharField(max_length=10, choices=status_type, default='unread')
+	notification_date = models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):
-		return self.id
+		return str(self.message)
 
 
 
