@@ -208,6 +208,7 @@ class NotificationView(View):
 		else:
 			notif = Notification.objects.filter(user__username=username)
 			if notif is not None:
+				notif.notification_date = DateFormat(notif.notification_date).format(get_format('DATE_FORMAT'))
 				data = NotificationSerializer(notif,many=True).data
 				response = {
 					'status': 200,
