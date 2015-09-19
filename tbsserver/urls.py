@@ -8,7 +8,6 @@ from . import serializers
 router = routers.DefaultRouter()
 router.register(r'users', serializers.UserProfileViewSet)
 router.register(r'notifications', serializers.NotificationViewSet)
-router.register(r'admin_notifications', serializers.AdminNotificationViewSet)
 router.register(r'profile', serializers.UserProfileViewSet)
 router.register(r'transactions', serializers.TransactionViewSet)
 router.register(r'sell_requests', serializers.SellApprovalViewSet)

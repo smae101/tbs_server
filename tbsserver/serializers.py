@@ -1,6 +1,4 @@
 from django.contrib.auth.models import User
-from django.utils.dateformat import DateFormat
-from django.utils.formats import get_format
 from tbs import models
 from rest_framework import serializers, viewsets
 
@@ -45,13 +43,12 @@ class ItemSerializer(serializers.ModelSerializer):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-	target = UserSerializer(many=False)
-	maker = UserProfileSerializer(many=False)
+	target = UserProfileSerializer(many=False)
 	item = ItemSerializer(many=False)
-	
+
 	class Meta:
 		model = models.Notification
-		fields = 'target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date'
+		fields = 'target', 'item', 'message', 'notification_type', 'status', 'notification_date'
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -99,22 +96,9 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Notification.objects.filter(target__username__iexact=username)
+			return models.Notification.objects.filter(target__user__username__iexact=username)
 
 		return super(NotificationViewSet, self).get_queryset()
-
-
-class AdminNotificationViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.Notification.objects.all()
-	serializer_class = NotificationSerializer
-
-	def get_queryset(self):
-		username = self.request.query_params.get('username', None)
-
-		if username is not None:
-			return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True)
-
-		return super(AdminNotificationViewSet, self).get_queryset()
 
 
 class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
