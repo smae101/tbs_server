@@ -118,7 +118,7 @@ class Notification(models.Model):
 	)
 
 	target = models.ForeignKey(User, related_name='target')#this is for the receiver of the notification
-	maker = models.ForeignKey(UserProfile) #this is for the maker of the notification or who made the action
+	maker = models.ForeignKey(UserProfile, blank=True, null=True) #this is for the maker of the notification or who made the action
 	item = models.ForeignKey(Item)
 	message = models.CharField(max_length=500)
 	#notification_type = models.CharField(max_length=10, choices=notif_type)

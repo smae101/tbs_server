@@ -7,7 +7,7 @@ from . import serializers
 
 router = routers.DefaultRouter()
 router.register(r'users', serializers.UserProfileViewSet)
-router.register(r'notifications', serializers.NotificationViewSet)
+router.register(r'user_notifications', serializers.UserNotificationViewSet)
 router.register(r'admin_notifications', serializers.AdminNotificationViewSet)
 router.register(r'profile', serializers.UserProfileViewSet)
 router.register(r'transactions', serializers.TransactionViewSet)

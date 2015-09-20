@@ -89,7 +89,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 		fields = 'buyer', 'item', 'reserved_date', 'request_expiration', 'status'
 
 
-class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
+class UserNotificationViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = models.Notification.objects.all()
 	serializer_class = NotificationSerializer
 
@@ -97,9 +97,9 @@ class NotificationViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Notification.objects.filter(target__user__username__iexact=username)
+			return models.Notification.objects.filter(target__username__iexact=username, status="unread")
 
-		return super(NotificationViewSet, self).get_queryset()
+		return super(UserNotificationViewSet, self).get_queryset()
 
 
 class AdminNotificationViewSet(viewsets.ReadOnlyModelViewSet):

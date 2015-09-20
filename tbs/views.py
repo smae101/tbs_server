@@ -362,29 +362,3 @@ class SellItemView(View):
 
 	def get(self, request):
 		return render(request, 'sellItem.html')
-
-class ItemsToSellView(View):
-	def get(self, request):
-
-		username = request.GET.get('username',None)
-		if username is None :
-			response = {
-				'status': 404,
-				'statusText': 'No username to refer to',
-			}
-			return JsonResponse(response)
-		else:
-			item = Item.objects.filter(user__username=username)
-			if item is not None:
-				data = ItemSerializer(item,many=True).data
-				response = {
-					'status': 200,
-					'statusText': 'There is an item',
-					'data': data,
-				}
-			else:
-				response = {
-					'status': 403,
-					'statusText': 'You have no item',
-				}
-			return JsonResponse(response)
