@@ -48,7 +48,7 @@ class Item(models.Model):
 	status = models.CharField(max_length=15)
 	#purpose = models.CharField(max_length=10, choices=purpose_type)
 	purpose = models.CharField(max_length=10)
-	price = models.FloatField(blank=True, null=True)
+	price = models.FloatField(default=0)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
 
@@ -118,7 +118,7 @@ class Notification(models.Model):
 	)
 
 	target = models.ForeignKey(User, related_name='target')#this is for the receiver of the notification
-	maker = models.ForeignKey(UserProfile, blank=True, null=True) #this is for the maker of the notification or who made the action
+	maker = models.ForeignKey(UserProfile, default='admin') #this is for the maker of the notification or who made the action
 	item = models.ForeignKey(Item)
 	message = models.CharField(max_length=500)
 	#notification_type = models.CharField(max_length=10, choices=notif_type)

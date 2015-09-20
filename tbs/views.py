@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, Item, Category
+from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category
 from django.contrib.auth import authenticate
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
@@ -362,3 +362,61 @@ class SellItemView(View):
 
 	def get(self, request):
 		return render(request, 'sellItem.html')
+
+
+class DonateItemView(View):
+	def post(self, request):
+		owner = request.POST.get('owner',None)
+		name = request.POST.get('name',None)
+		description = request.POST.get('description',None)
+		#picture = request.POST.get('picture',None)
+		#stars_required = request.POST.get('stars_required',None)
+
+		user = User.objects.get(username=owner)
+		if user is None :
+			response = {
+				'status': 404,
+				'statusText': 'No username to refer to',
+			}
+			return JsonResponse(response)
+		else:
+			item_owner = UserProfile.objects.get(user=user)
+
+			approval_donate_request = ApprovalDonateRequest()
+
+			item = Item()
+			item.owner = item_owner
+			item.name = name
+			item.description = description
+			item.category = Category.objects.get(category_name="Others")
+			item.status = "Pending"
+			item.purpose = "Donate"
+			item.picture = "https://www.google.com.ph"
+			item.stars_required = 0
+
+			item.save()
+
+			approval_donate_request.donor = item_owner
+			approval_donate_request.item = item
+			approval_donate_request.save()
+
+
+			admin = User.objects.get(username="admin")
+			notif = Notification()
+			notif.target = admin
+			notif.maker = item_owner
+			notif.item = item
+			notif.message = "Donate " + item.name
+			notif.notification_type = "donate"
+			notif.status = "unread"
+			notif.save()
+
+			response = {
+				'status': 201,
+				'statusText': 'Item created',
+			}
+
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'donateItem.html')

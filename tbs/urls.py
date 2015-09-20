@@ -13,4 +13,5 @@ urlpatterns = [
 	url(r'^sell_approval_all$', views.AllSellApprovalView.as_view(), name='sell_approval_all'),
 	url(r'^sell_approval/$', views.SellApprovalView.as_view(), name='sell_approval'),
 	url(r'^sell_item$', views.SellItemView.as_view(), name='sell_item'),
+	url(r'^donate_item$', views.DonateItemView.as_view(), name='donate_item'),
 ]
