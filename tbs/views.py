@@ -342,6 +342,17 @@ class SellItemView(View):
 			approval_sell_request.item = item
 			approval_sell_request.save()
 
+
+			admin = User.objects.get(username="admin")
+			notif = Notification()
+			notif.target = admin
+			notif.maker = item_owner
+			notif.item = item
+			notif.message = "Sell " + item.name
+			notif.notification_type = "sell"
+			notif.status = "unread"
+			notif.save()
+
 			response = {
 				'status': 201,
 				'statusText': 'Item created',

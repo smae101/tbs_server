@@ -121,8 +121,10 @@ class Notification(models.Model):
 	maker = models.ForeignKey(UserProfile) #this is for the maker of the notification or who made the action
 	item = models.ForeignKey(Item)
 	message = models.CharField(max_length=500)
-	notification_type = models.CharField(max_length=10, choices=notif_type)
-	status = models.CharField(max_length=10, choices=status_type, default='unread')
+	#notification_type = models.CharField(max_length=10, choices=notif_type)
+	notification_type = models.CharField(max_length=10)
+	#status = models.CharField(max_length=10, choices=status_type, default='unread')
+	status = models.CharField(max_length=10, default='unread')
 	notification_date = models.DateTimeField(auto_now_add=True)
 
 	def __str__(self):
