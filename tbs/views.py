@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest
+from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, Item, Category
 from django.contrib.auth import authenticate
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
@@ -300,3 +300,54 @@ class SellApprovalView(View):
 					'statusText': 'You have no request',
 				}
 			return JsonResponse(response)
+
+class SellItemView(View):
+	def post(self, request):
+		owner = request.POST.get('owner',None)
+		name = request.POST.get('name',None)
+		description = request.POST.get('description',None)
+		#category = request.POST.get('category',None)
+		#status = request.POST.get('status',None)
+		#purpose = request.POST.get('purpose',None)
+		price = request.POST.get('price',None)
+		#picture = request.POST.get('picture',None)
+		#stars_required = request.POST.get('stars_required',None)
+
+		user = User.objects.get(username=owner)
+		if user is None :
+			response = {
+				'status': 404,
+				'statusText': 'No username to refer to',
+			}
+			return JsonResponse(response)
+		else:
+			item_owner = UserProfile.objects.get(user=user)
+
+			approval_sell_request = ApprovalSellRequest()
+
+			item = Item()
+			item.owner = item_owner
+			item.name = name
+			item.description = description
+			item.category = Category.objects.get(category_name="Others")
+			item.status = "Pending"
+			item.purpose = "Sell"
+			item.price = price
+			item.picture = "https://www.google.com.ph"
+			item.stars_required = 0
+
+			item.save()
+
+			approval_sell_request.seller = item_owner
+			approval_sell_request.item = item
+			approval_sell_request.save()
+
+			response = {
+				'status': 201,
+				'statusText': 'Item created',
+			}
+
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'sellItem.html')

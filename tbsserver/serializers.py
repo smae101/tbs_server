@@ -120,7 +120,7 @@ class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = UserProfileSerializer
 
 	def get_queryset(self):
-		username = models.request.query_params.get('username',None)
+		username = self.request.query_params.get('username',None)
 
 		if username is not None:
 			return models.UserProfile.objects.filter(user__username__iexact = username)

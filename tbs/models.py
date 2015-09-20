@@ -31,6 +31,7 @@ class Category(models.Model):
 
 class Item(models.Model):
 	status_type = (
+		('pending','Pending'),
 		('reserved','Reserved'),
 		('available','Available'),
 	)
@@ -42,10 +43,12 @@ class Item(models.Model):
 	owner = models.ForeignKey(UserProfile, related_name='owner')
 	name = models.CharField(max_length=50)
 	description = models.CharField(max_length=500)
-	category = models.ForeignKey(Category)
-	status = models.CharField(max_length=15, choices=status_type)
-	purpose = models.CharField(max_length=10, choices=purpose_type)
-	price = models.FloatField()
+	category = models.ForeignKey(Category, blank=True, null=True)
+	#status = models.CharField(max_length=15, choices=status_type)
+	status = models.CharField(max_length=15)
+	#purpose = models.CharField(max_length=10, choices=purpose_type)
+	purpose = models.CharField(max_length=10)
+	price = models.FloatField(blank=True, null=True)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
 
