@@ -14,6 +14,12 @@ router.register(r'transactions', serializers.TransactionViewSet)
 router.register(r'sell_requests', serializers.SellApprovalViewSet)
 router.register(r'donate_requests', serializers.DonateApprovalViewSet)
 router.register(r'reservation_requests', serializers.ReservationViewSet)
+router.register(r'items_to_sell', serializers.ItemsToSellViewSet)
+router.register(r'pending_items', serializers.PendingItemsViewSet)
+router.register(r'available_items', serializers.AvailableItemsViewSet)
+router.register(r'items_to_donate', serializers.ItemsToDonateViewSet)
+router.register(r'all_donations', serializers.AllDonationsViewSet)
+
 
 
 urlpatterns = [

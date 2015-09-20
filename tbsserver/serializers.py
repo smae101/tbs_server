@@ -171,3 +171,61 @@ class ReservationViewSet(viewsets.ReadOnlyModelViewSet):
 
 		return super(ReservationViewSet, self).get_queryset()
 
+#User: Sell Items
+class ItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.Item.objects.filter(owner__user__username__iexact = username, status="Available", purpose="Sell")
+
+		return super(ItemsToSellViewSet, self).get_queryset()
+
+#User: Pending Items
+class PendingItemsViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.Item.objects.filter(owner__user__username__iexact = username, status="Pending")
+
+		return super(PendingItemsViewSet, self).get_queryset()
+
+#User: Buy Items
+class AvailableItemsViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		return models.Item.objects.filter(status="Available", purpose="Sell")
+
+		return super(AvailableItemsViewSet, self).get_queryset()
+
+#User: Donate Items
+class ItemsToDonateViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.Item.objects.filter(owner__user__username__iexact = username, status="Available", purpose="Donate")
+
+		return super(ItemsToDonateViewSet, self).get_queryset()
+
+#User: Claim Award button
+class AllDonationsViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		return models.Item.objects.filter(status="Available", purpose="Donate")
+
+		return super(AllDonationsViewSet, self).get_queryset()
