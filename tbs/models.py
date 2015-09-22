@@ -39,7 +39,7 @@ class Item(models.Model):
 		('sell','Sell'),
 		('donate','Donate'),
 	)
-
+ 
 	owner = models.ForeignKey(UserProfile, related_name='owner')
 	name = models.CharField(max_length=50)
 	description = models.CharField(max_length=500)
@@ -83,10 +83,12 @@ class ApprovalDonateRequest(models.Model):
 
 
 class ReservationRequest(models.Model):
-	buyer = models.ForeignKey(UserProfile)
+	def expiry():
+		return datetime.now() + timedelta(days=3)
+	buyer = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
-	reserved_date = models.DateTimeField()
-	request_expiration = models.DateTimeField()
+	reserved_date = models.DateTimeField(auto_now_add=True)
+	request_expiration = models.DateTimeField(default=expiry)
 	status = models.CharField(max_length=10)
 
 	def __str__(self):
@@ -118,7 +120,7 @@ class Notification(models.Model):
 	)
 
 	target = models.ForeignKey(User, related_name='target')#this is for the receiver of the notification
-	maker = models.ForeignKey(UserProfile, default='admin') #this is for the maker of the notification or who made the action
+	maker = models.ForeignKey(User, default='admin') #this is for the maker of the notification or who made the action
 	item = models.ForeignKey(Item)
 	message = models.CharField(max_length=500)
 	#notification_type = models.CharField(max_length=10, choices=notif_type)

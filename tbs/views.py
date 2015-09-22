@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category
+from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest
 from django.contrib.auth import authenticate
 from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
@@ -419,4 +419,63 @@ class DonateItemView(View):
 			return JsonResponse(response)
 
 	def get(self, request):
-		return render(request, 'donateItem.html')
+		return render(request, 'donateItem.html')	
+
+
+class BuyItemView(View):
+	def post(self, request):
+		buyer = request.POST.get('buyer',None)
+		item_id = request.POST.get('item_id',None)
+
+		if buyer and item_id:
+			user =  User.objects.get(username=buyer)
+			if user is not None:
+				item = Item.objects.get(id=item_id)
+				item.status = "Reserved"
+				item.save()
+
+				reservation_request = ReservationRequest()
+				reservation_request.buyer = user
+				reservation_request.item = item
+				reservation_request.status = "Available"
+				reservation_request.save()
+
+				notif_admin = Notification()
+				notif_admin.target = User.objects.get(username="admin")
+				notif_admin.maker = user
+				notif_admin.item = item
+				notif_admin.message = "Buy " + item.name + "(" + notif_admin.target.username + ")"
+				notif_admin.notification_type = "buy"
+				notif_admin.status = "unread"
+				notif_admin.save()
+
+				notif_seller = Notification()
+				notif_seller.target = User.objects.get(username=item.owner.user.username)
+				notif_seller.maker = user
+				notif_seller.item = item
+				notif_seller.message = "Buy " + item.name + "(" + notif_seller.target.username + ")"
+				notif_seller.notification_type = "buy"
+				notif_seller.status = "unread"
+				notif_seller.save()
+
+				response = {
+					'status': 201,
+					'statusText': 'Item updated',
+				}
+			else:
+				response = {
+					'status': 404,
+					'statusText': 'User does not exist',
+				}
+			
+			return JsonResponse(response)
+		else:
+			response = {
+				'status': 403,
+				'statusText': 'Some input parameters are missing.',
+			}
+			return JsonResponse(response)
+
+	def get(self, request):
+		print("get")
+		return render(request, 'buyItem.html')
