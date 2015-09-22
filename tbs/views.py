@@ -1,12 +1,14 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest
 from django.contrib.auth import authenticate
-from django.views.generic import View
+from django.contrib.auth.models import User
+from django.db.utils import IntegrityError
+from django.http import QueryDict, JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import View
+
 from rest_framework.parsers import JSONParser
-from django.http import QueryDict
+
+from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest
 
 
 class RegisterView(View):
@@ -43,6 +45,11 @@ class RegisterView(View):
 					'status': 404,
 					'statusText': 'User does not exist',
 				}
+			except IntegrityError:
+				response = {
+					'status': 401,
+					'statusText': 'Username already exists',
+				}
 			
 			return JsonResponse(response)
 		else:
@@ -72,12 +79,12 @@ class LoginView(View):
 			}
 			return JsonResponse(response)
 		else:
-			user =  authenticate(username=username,password=password).id
+			user =  authenticate(username=username,password=password)
 			if user is not None:
 				response = {
 					'status': 200,
 					'statusText': 'Successful Login',
-					'user_id': user,
+					'user_id': user.id,
 				}
 			else:
 				response = {
@@ -121,7 +128,7 @@ class AdminLoginView(View):
 		return render(request, 'adminLogin.html')
 
 
-class ProfileView(View):
+'''class ProfileView(View):
 	def get(self, request):
 		print(request.body)
 
@@ -149,7 +156,7 @@ class ProfileView(View):
 					'status': 403,
 					'statusText': 'UserProfile not found',
 				}
-			return JsonResponse(response)
+			return JsonResponse(response)'''
 
 
 class ChangePasswordView(View):
@@ -195,7 +202,7 @@ class ChangePasswordView(View):
 		return render(request, 'changePassword.html')
 
 
-class NotificationView(View):
+'''class NotificationView(View):
 	def get(self, request):
 
 		username = request.GET.get('username',None)
@@ -299,7 +306,8 @@ class SellApprovalView(View):
 					'status': 403,
 					'statusText': 'You have no request',
 				}
-			return JsonResponse(response)
+			return JsonResponse(response)'''
+			
 
 class SellItemView(View):
 	def post(self, request):
@@ -479,3 +487,78 @@ class BuyItemView(View):
 	def get(self, request):
 		print("get")
 		return render(request, 'buyItem.html')
+
+
+class AdminApproveItemView(View):
+	def post(self, request):
+		item_id = request.POST.get('item_id',None)
+		request_id = request.POST.get('request_id',None)
+		status = 'available'
+
+		if (item_id or request_id) is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			item = Item.objects.get(id=item_id)
+			item.status = status
+			item.save()
+
+			target = User.objects.get(username=item.owner.user.username)
+			maker = User.objects.get(username="admin")
+
+			notif = Notification()
+			notif.target = target
+			notif.maker = maker
+			notif.item = item
+			notif.message = "Approve " + item.name
+			notif.notification_type = "approve"
+			notif.status = "unread"
+			notif.save()
+
+			request = ApprovalSellRequest.objects.get(id=request_id)
+			request.delete()
+
+			response = {
+				'status': 200,
+				'statusText': 'Sell item approval successful',}
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'approveItem.html')
+
+
+class AdminDisapproveItemView(View):
+	def post(self, request):
+		item_id = request.POST.get('item_id',None)
+		request_id = request.POST.get('request_id',None)
+		status = 'disapproved'
+
+		item = Item.objects.get(id=item_id)
+		item.status = status
+		item.save()
+
+		target = User.objects.get(username=item.owner.user.username)
+		maker = User.objects.get(username="admin")
+
+		notif = Notification()
+		notif.target = target
+		notif.maker = maker
+		notif.item = item
+		notif.message = "Disapprove " + item.name
+		notif.notification_type = "disapprove"
+		notif.status = "unread"
+		notif.save()
+
+		request = ApprovalSellRequest.objects.get(id=request_id)
+		request.delete()
+
+		response = {
+			'status': 200,
+			'statusText': 'Sell item disapproval successful',}
+		return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'disapproveItem.html')

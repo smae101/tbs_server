@@ -30,7 +30,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Category
-		fields = 'category_name',
+		fields = 'id','category_name',
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -39,12 +39,12 @@ class ItemSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Item
-		fields = 'owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'picture', 'stars_required'
+		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'picture', 'stars_required'
 
 
 class NotificationSerializer(serializers.ModelSerializer):
 	target = UserSerializer(many=False)
-	maker = UserProfileSerializer(many=False)
+	maker = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
 
 	class Meta:
@@ -59,34 +59,34 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Transaction
-		fields = 'item', 'buyer', 'seller', 'date_claimed'
+		fields = 'id','item', 'buyer', 'seller', 'date_claimed'
 
 
 class SellApprovalSerializer(serializers.ModelSerializer):
-	seller = UserProfileSerializer(many=False)
+	seller = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
 
 	class Meta:
 		model = models.ApprovalSellRequest
-		fields = 'seller', 'item', 'request_date', 'request_expiration'
+		fields = 'id','seller', 'item', 'request_date', 'request_expiration'
 
 
 class DonateApprovalSerializer(serializers.ModelSerializer):
-	donor = UserProfileSerializer(many=False)
+	donor = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
 
 	class Meta:
 		model = models.ApprovalDonateRequest
-		fields = 'donor', 'item', 'request_date', 'request_expiration'
+		fields = 'id','donor', 'item', 'request_date', 'request_expiration'
 
 
 class ReservationSerializer(serializers.ModelSerializer):
-	buyer = UserProfileSerializer(many=False)
+	buyer = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
 
 	class Meta:
 		model = models.ReservationRequest
-		fields = 'buyer', 'item', 'reserved_date', 'request_expiration', 'status'
+		fields = 'id','buyer', 'item', 'reserved_date', 'request_expiration', 'status'
 
 
 class UserNotificationViewSet(viewsets.ReadOnlyModelViewSet):
@@ -141,7 +141,7 @@ class SellApprovalViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username',None)
 
 		if username is not None:
-			return models.ApprovalSellRequest.objects.filter(seller__user__username__iexact = username)
+			return models.ApprovalSellRequest.objects.filter(seller__username__iexact = username)
 
 		return super(SellApprovalViewSet, self).get_queryset()
 
@@ -154,7 +154,7 @@ class DonateApprovalViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username',None)
 
 		if username is not None:
-			return models.ApprovalDonateRequest.objects.filter(seller__user__username__iexact = username)
+			return models.ApprovalDonateRequest.objects.filter(seller__username__iexact = username)
 
 		return super(DonateApprovalViewSet, self).get_queryset()
 
@@ -167,7 +167,7 @@ class ReservationViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username',None)
 
 		if username is not None:
-			return models.ReservationRequest.objects.filter(seller__user__username__iexact = username)
+			return models.ReservationRequest.objects.filter(seller__username__iexact = username)
 
 		return super(ReservationViewSet, self).get_queryset()
 

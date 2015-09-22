@@ -60,7 +60,7 @@ class ApprovalSellRequest(models.Model):
 	def expiry():
 		return datetime.now() + timedelta(days=3)
 
-	seller = models.ForeignKey(UserProfile)
+	seller = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
 	request_date = models.DateTimeField(auto_now_add=True)
 	request_expiration = models.DateTimeField(default=expiry)
@@ -73,7 +73,7 @@ class ApprovalDonateRequest(models.Model):
 	def expiry():
 		return datetime.now() + timedelta(days=3)
 
-	donor = models.ForeignKey(UserProfile)
+	donor = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
 	request_date = models.DateTimeField(auto_now_add=True)
 	request_expiration = models.DateTimeField(default=expiry)
