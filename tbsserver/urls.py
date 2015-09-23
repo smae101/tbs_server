@@ -19,6 +19,7 @@ router.register(r'pending_items', serializers.PendingItemsViewSet)
 router.register(r'available_items', serializers.AvailableItemsViewSet)
 router.register(r'items_to_donate', serializers.ItemsToDonateViewSet)
 router.register(r'all_donations', serializers.AllDonationsViewSet)
+router.register(r'categories', serializers.ListCategoriesViewSet)
 
 
 

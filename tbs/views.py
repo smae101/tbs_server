@@ -128,37 +128,6 @@ class AdminLoginView(View):
 		return render(request, 'adminLogin.html')
 
 
-'''class ProfileView(View):
-	def get(self, request):
-		print(request.body)
-
-		user_id = request.GET.get('user_id',None)
-		print(user_id)
-		if user_id is None :
-			response = {
-				'status': 404,
-				'statusText': 'No username to refer to',
-			}
-			return JsonResponse(response)
-		else:
-			user_id = UserProfile.objects.get(user=user_id)
-
-			serializer = UserProfileSerializer(user_id)
-			data = serializer.data
-			if user_id is not None:
-				response = {
-					'status': 200,
-					'statusText': 'Profile found',
-					'data': data,
-				}
-			else:
-				response = {
-					'status': 403,
-					'statusText': 'UserProfile not found',
-				}
-			return JsonResponse(response)'''
-
-
 class ChangePasswordView(View):
 	def put(self, request):
 		put = QueryDict(request.body)
@@ -202,112 +171,6 @@ class ChangePasswordView(View):
 		return render(request, 'changePassword.html')
 
 
-'''class NotificationView(View):
-	def get(self, request):
-
-		username = request.GET.get('username',None)
-		if username is None :
-			response = {
-				'status': 404,
-				'statusText': 'No username to refer to',
-			}
-			return JsonResponse(response)
-		else:
-			notif = Notification.objects.filter(user__username=username)
-			if notif is not None:
-				data = NotificationSerializer(notif,many=True).data
-				response = {
-					'status': 200,
-					'statusText': 'There is a notification',
-					'data': data,
-				}
-			else:
-				response = {
-					'status': 403,
-					'statusText': 'You have no notification',
-				}
-			return JsonResponse(response)
-
-
-class TransactionView(View):
-	def get(self, request):
-		transactions = Transaction.objects.all()
-		if transactions is not None:
-			data = TransactionSerializer(transactions,many=True).data
-			response = {
-				'status': 200,
-				'statusText': 'There is a Transaction',
-				'data': data,
-			}
-		else:
-			response = {
-				'status': 403,
-				'statusText': 'No transactions',
-			}
-		return JsonResponse(response)
-
-
-class AllSellApprovalView(View):
-	def get(self, request):
-		requests = ApprovalSellRequest.objects.all()
-		if requests is not None:
-			data = SellApprovalSerializer(requests,many=True).data
-			response = {
-				'status': 200,
-				'statusText': 'There is a request',
-				'data': data,
-			}
-		else:
-			response = {
-				'status': 403,
-				'statusText': 'No request',
-			}
-		return JsonResponse(response)
-
-
-class AllDonateApprovalView(View):
-	def get(self, request):
-		requests = ApprovalDonateRequest.objects.all()
-		if requests is not None:
-			data = DonateApprovalSerializer(requests,many=True).data
-			response = {
-				'status': 200,
-				'statusText': 'There is a request',
-				'data': data,
-			}
-		else:
-			response = {
-				'status': 403,
-				'statusText': 'No request',
-			}
-		return JsonResponse(response)
-
-
-class SellApprovalView(View):
-	def get(self, request):
-		username = request.GET.get('username',None)
-		if username is None :
-			response = {
-				'status': 404,
-				'statusText': 'No username to refer to',
-			}
-			return JsonResponse(response)
-		else:
-			requests = ApprovalSellRequest.objects.filter(seller__username=username)
-			if requests is not None:
-				data = SellApprovalSerializer(requests,many=True).data
-				response = {
-					'status': 200,
-					'statusText': 'There is a request',
-					'data': data,
-				}
-			else:
-				response = {
-					'status': 403,
-					'statusText': 'You have no request',
-				}
-			return JsonResponse(response)'''
-			
 
 class SellItemView(View):
 	def post(self, request):
@@ -493,16 +356,20 @@ class AdminApproveItemView(View):
 	def post(self, request):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
+		cat = request.POST.get('category',None)
 		status = 'available'
 
-		if (item_id or request_id) is None:
+		if (item_id or request_id or category) is None:
 			response = {
 				'status': 404,
 				'statusText': 'Missing data',
 			}
 			return JsonResponse(response)
 		else:
+			category = Category.objects.get(category_name=cat)
+
 			item = Item.objects.get(id=item_id)
+			item.category = category
 			item.status = status
 			item.save()
 
@@ -536,29 +403,225 @@ class AdminDisapproveItemView(View):
 		request_id = request.POST.get('request_id',None)
 		status = 'disapproved'
 
-		item = Item.objects.get(id=item_id)
-		item.status = status
-		item.save()
+		if (item_id or request_id) is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			item = Item.objects.get(id=item_id)
+			item.status = status
+			item.save()
 
-		target = User.objects.get(username=item.owner.user.username)
-		maker = User.objects.get(username="admin")
+			target = User.objects.get(username=item.owner.user.username)
+			maker = User.objects.get(username="admin")
 
-		notif = Notification()
-		notif.target = target
-		notif.maker = maker
-		notif.item = item
-		notif.message = "Disapprove " + item.name
-		notif.notification_type = "disapprove"
-		notif.status = "unread"
-		notif.save()
+			notif = Notification()
+			notif.target = target
+			notif.maker = maker
+			notif.item = item
+			notif.message = "Disapprove " + item.name
+			notif.notification_type = "disapprove"
+			notif.status = "unread"
+			notif.save()
 
-		request = ApprovalSellRequest.objects.get(id=request_id)
-		request.delete()
+			request = ApprovalSellRequest.objects.get(id=request_id)
+			request.delete()
 
-		response = {
-			'status': 200,
-			'statusText': 'Sell item disapproval successful',}
-		return JsonResponse(response)
+			response = {
+				'status': 200,
+				'statusText': 'Sell item disapproval successful',}
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'disapproveItem.html')
+
+
+class AddCategoryView(View):
+	def post(self, request):
+		cat = request.POST.get('category',None)
+
+		if cat is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			category = Category()
+			category.category_name = cat
+			category.save()
+
+			response = {
+				'status': 200,
+				'statusText': 'New category added',}
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'addCategory.html')
+
+
+class ReservedItemAvailableView(View):
+	def post(self, request):
+		item_id = request.POST.get('item_id',None)
+		request_id = request.POST.get('request_id',None)
+		status = 'available'
+
+		if (item_id or request_id) is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			item = Item.objects.get(id=item_id)
+
+			target = User.objects.get(username=item.owner.user.username)
+			maker = User.objects.get(username="admin")
+
+			notif = Notification()
+			notif.target = target
+			notif.maker = maker
+			notif.item = item
+			notif.message = "This item is now available: " + item.name
+			notif.notification_type = "available"
+			notif.status = "unread"
+			notif.save()
+
+			request = ReservationRequest.objects.get(id=request_id)
+			request.status = "available"
+			request.save()
+
+			response = {
+				'status': 200,
+				'statusText': 'Item set available successful',}
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'approveItem.html')
+
+
+class ReservedItemClaimedView(View):
+	def post(self, request):
+		item_id = request.POST.get('item_id',None)
+		request_id = request.POST.get('request_id',None)
+		status = 'sold'
+
+		if (item_id or request_id) is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			item = Item.objects.get(id=item_id)
+			item.status = status
+			item.save()
+
+			target = User.objects.get(username=item.owner.user.username)
+			maker = User.objects.get(username="admin")
+
+			notif = Notification()
+			notif.target = target
+			notif.maker = maker
+			notif.item = item
+			notif.message = "This item is now sold: " + item.name
+			notif.notification_type = "sold"
+			notif.status = "unread"
+			notif.save()
+
+			request = ReservationRequest.objects.get(id=request_id)
+			request.delete()
+
+			response = {
+				'status': 200,
+				'statusText': 'Item successfully claimed',}
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'approveItem.html')
+
+
+class AdminApproveDonationView(View):
+	def post(self, request):
+		item_id = request.POST.get('item_id',None)
+		request_id = request.POST.get('request_id',None)
+		stars = request.POST.get('stars_required',None)
+		status = 'available'
+
+		if (item_id or request_id or stars) is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			item = Item.objects.get(id=item_id)
+			item.status = status
+			item.stars_required = stars
+			item.save()
+
+			target = User.objects.get(username=item.owner.user.username)
+			maker = User.objects.get(username="admin")
+
+			notif = Notification()
+			notif.target = target
+			notif.maker = maker
+			notif.item = item
+			notif.message = "Approve Donated item: " + item.name
+			notif.notification_type = "approve"
+			notif.status = "unread"
+			notif.save()
+
+			request = ApprovalDonateRequest.objects.get(id=request_id)
+			request.delete()
+
+			response = {
+				'status': 200,
+				'statusText': 'Donated item approval successful',}
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'approveDonation.html')
+
+
+class AdminDisapproveDonationView(View):
+	def post(self, request):
+		item_id = request.POST.get('item_id',None)
+		request_id = request.POST.get('request_id',None)
+		status = 'disapproved'
+
+		if (item_id or request_id) is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			item = Item.objects.get(id=item_id)
+			item.status = status
+			item.save()
+
+			target = User.objects.get(username=item.owner.user.username)
+			maker = User.objects.get(username="admin")
+
+			notif = Notification()
+			notif.target = target
+			notif.maker = maker
+			notif.item = item
+			notif.message = "Disapprove donated item: " + item.name
+			notif.notification_type = "disapprove"
+			notif.status = "unread"
+			notif.save()
+
+			request = ApprovalDonateRequest.objects.get(id=request_id)
+			request.delete()
+
+			response = {
+				'status': 200,
+				'statusText': 'Donated item disapproval successful',}
+			return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'disapproveItem.html')

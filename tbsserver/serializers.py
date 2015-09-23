@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
+
 from tbs import models
+
 from rest_framework import serializers, viewsets
 
 
@@ -134,14 +136,14 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SellApprovalViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.ApprovalSellRequest.objects.all()
+	queryset = models.ApprovalSellRequest.objects.filter()
 	serializer_class = SellApprovalSerializer
 
 	def get_queryset(self):
-		username = self.request.query_params.get('username',None)
+		request_id = self.request.query_params.get('request_id',None)
 
-		if username is not None:
-			return models.ApprovalSellRequest.objects.filter(seller__username__iexact = username)
+		if request_id is not None:
+			return models.ApprovalSellRequest.objects.filter(id = request_id)
 
 		return super(SellApprovalViewSet, self).get_queryset()
 
@@ -151,10 +153,10 @@ class DonateApprovalViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = DonateApprovalSerializer
 
 	def get_queryset(self):
-		username = self.request.query_params.get('username',None)
+		request_id = self.request.query_params.get('request_id',None)
 
-		if username is not None:
-			return models.ApprovalDonateRequest.objects.filter(seller__username__iexact = username)
+		if request_id is not None:
+			return models.ApprovalDonateRequest.objects.filter(id = request_id)
 
 		return super(DonateApprovalViewSet, self).get_queryset()
 
@@ -229,3 +231,22 @@ class AllDonationsViewSet(viewsets.ReadOnlyModelViewSet):
 		return models.Item.objects.filter(status="Available", purpose="Donate")
 
 		return super(AllDonationsViewSet, self).get_queryset()
+
+
+class ListCategoriesViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Category.objects.all()
+	serializer_class = CategorySerializer
+
+
+class SearchItemViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		queryset = models.Item.objects.all()
+
+		query = self.query_params.get('search', None)
+		if query is not None:
+			queryset.filter(name__icontains=query)
+
+		return queryset
