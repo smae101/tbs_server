@@ -209,7 +209,7 @@ class SellItemView(View):
 
 			item.save()
 
-			approval_sell_request.seller = item_owner
+			approval_sell_request.seller = user
 			approval_sell_request.item = item
 			approval_sell_request.save()
 
@@ -217,7 +217,7 @@ class SellItemView(View):
 			admin = User.objects.get(username="admin")
 			notif = Notification()
 			notif.target = admin
-			notif.maker = item_owner
+			notif.maker = user
 			notif.item = item
 			notif.message = "Sell " + item.name
 			notif.notification_type = "sell"
@@ -267,7 +267,7 @@ class DonateItemView(View):
 
 			item.save()
 
-			approval_donate_request.donor = item_owner
+			approval_donate_request.donor = user
 			approval_donate_request.item = item
 			approval_donate_request.save()
 
@@ -275,7 +275,7 @@ class DonateItemView(View):
 			admin = User.objects.get(username="admin")
 			notif = Notification()
 			notif.target = admin
-			notif.maker = item_owner
+			notif.maker = user
 			notif.item = item
 			notif.message = "Donate " + item.name
 			notif.notification_type = "donate"
@@ -350,6 +350,133 @@ class BuyItemView(View):
 	def get(self, request):
 		print("get")
 		return render(request, 'buyItem.html')
+
+
+class CancelReservedItemView(View):
+	def post(self, request):
+		buyer = request.POST.get('buyer',None)
+		item_id = request.POST.get('item_id',None)
+		reservation_id = request.POST.get('reservation_id',None)
+
+		if buyer and item_id:
+			user =  User.objects.get(username=buyer)
+			if user is not None:
+				item = Item.objects.get(id=item_id)
+				item.status = "Available"
+				item.save()
+
+				reservation_request = ReservationRequest(id=reservation_id)
+				reservation_request.delete()
+
+				notif_admin = Notification()
+				notif_admin.target = User.objects.get(username="admin")
+				notif_admin.maker = user
+				notif_admin.item = item
+				notif_admin.message = "Cancel Reservation: " + item.name + "(" + notif_admin.target.username + ")"
+				notif_admin.notification_type = "cancel"
+				notif_admin.status = "unread"
+				notif_admin.save()
+
+				notif_seller = Notification()
+				notif_seller.target = User.objects.get(username=item.owner.user.username)
+				notif_seller.maker = user
+				notif_seller.item = item
+				notif_seller.message = "Cancel Reservation: " + item.name + "(" + notif_seller.target.username + ")"
+				notif_seller.notification_type = "cancel"
+				notif_seller.status = "unread"
+				notif_seller.save()
+
+				response = {
+					'status': 201,
+					'statusText': 'Item updated',
+				}
+			else:
+				response = {
+					'status': 404,
+					'statusText': 'User does not exist',
+				}
+			
+			return JsonResponse(response)
+		else:
+			response = {
+				'status': 403,
+				'statusText': 'Some input parameters are missing.',
+			}
+			return JsonResponse(response)
+
+	def get(self, request):
+		print("get")
+		return render(request, 'cancelReservedItem.html')
+
+
+class GetDonatedItemView(View):
+	def post(self, request):
+		buyer = request.POST.get('buyer',None)
+		item_id = request.POST.get('item_id',None)
+
+		if buyer and item_id:
+			user =  User.objects.get(username=buyer)
+			if user is not None:
+				item = Item.objects.get(id=item_id)
+				donee = UserProfile.objects.get(user=user)
+
+				if donee.stars_collected >= item.stars_required:
+					item.status = "Reserved"
+					item.save()
+
+					donee.stars_collected = donee.stars_collected - item.stars_required
+					donee.save()
+
+					reservation_request = ReservationRequest()
+					reservation_request.buyer = user
+					reservation_request.item = item
+					reservation_request.status = "Available"
+					reservation_request.save()
+
+					notif_admin = Notification()
+					notif_admin.target = User.objects.get(username="admin")
+					notif_admin.maker = user
+					notif_admin.item = item
+					notif_admin.message = "Get Item: " + item.name + "(" + notif_admin.target.username + ")"
+					notif_admin.notification_type = "get"
+					notif_admin.status = "unread"
+					notif_admin.save()
+
+					notif_seller = Notification()
+					notif_seller.target = User.objects.get(username=item.owner.user.username)
+					notif_seller.maker = user
+					notif_seller.item = item
+					notif_seller.message = "Get Item: " + item.name + "(" + notif_seller.target.username + ")"
+					notif_seller.notification_type = "get"
+					notif_seller.status = "unread"
+					notif_seller.save()
+
+					response = {
+						'status': 201,
+						'statusText': item.name + ' has been reserved',
+					}
+				else:
+					response = {
+						'status': 403,
+						'statusText': 'Not enough stars',
+					}
+			else:
+				response = {
+					'status': 404,
+					'statusText': 'User does not exist',
+				}
+			
+			return JsonResponse(response)
+		else:
+			response = {
+				'status': 403,
+				'statusText': 'Some input parameters are missing.',
+			}
+			return JsonResponse(response)
+
+	def get(self, request):
+		print("get")
+		return render(request, 'getDonatedItem.html')
 
 
 class AdminApproveItemView(View):

@@ -166,10 +166,10 @@ class ReservationViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = ReservationSerializer
 
 	def get_queryset(self):
-		username = self.request.query_params.get('username',None)
+		request_id = self.request.query_params.get('request_id',None)
 
-		if username is not None:
-			return models.ReservationRequest.objects.filter(seller__username__iexact = username)
+		if request_id is not None:
+			return models.ReservationRequest.objects.filter(id = request_id)
 
 		return super(ReservationViewSet, self).get_queryset()
 
@@ -205,7 +205,10 @@ class AvailableItemsViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = ItemSerializer
 
 	def get_queryset(self):
-		return models.Item.objects.filter(status="Available", purpose="Sell")
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.Item.objects.filter(status="Available", purpose="Sell").exclude(owner__user__username__iexact = username)
 
 		return super(AvailableItemsViewSet, self).get_queryset()
 
@@ -228,7 +231,10 @@ class AllDonationsViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = ItemSerializer
 
 	def get_queryset(self):
-		return models.Item.objects.filter(status="Available", purpose="Donate")
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.Item.objects.filter(status="Available", purpose="Donate").exclude(owner__user__username__iexact = username)
 
 		return super(AllDonationsViewSet, self).get_queryset()
 
