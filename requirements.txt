@@ -5,3 +5,4 @@ djangorestframework==3.2.3
 gunicorn==19.3.0
 Markdown==2.6.2
 virtualenv==13.1.2
+whitenoise==2.0.4
