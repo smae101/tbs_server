@@ -51,6 +51,7 @@ class Item(models.Model):
 	price = models.FloatField(default=0)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
+	date_approved = models.DateTimeField("Date Approved", null=True)
 
 	def __str__(self):
 		return self.name
