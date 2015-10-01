@@ -26,7 +26,7 @@ SECRET_KEY = 'x3h1$1jf7+3w3if=f_h2!2i+zh84&d3qirm&(*+9=+b#d(movl'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -84,7 +84,7 @@ DATABASES = {
     }
 }
 '''
-
+DATABASES = {}
 DATABASES['default'] =  dj_database_url.config()
 
 
