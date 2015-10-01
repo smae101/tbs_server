@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-from django.conf import settings
 import tbs.models
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ApprovalDonateRequest',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('request_date', models.DateTimeField(auto_now_add=True)),
                 ('request_expiration', models.DateTimeField(default=tbs.models.ApprovalDonateRequest.expiry)),
                 ('donor', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ApprovalSellRequest',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('request_date', models.DateTimeField(auto_now_add=True)),
                 ('request_expiration', models.DateTimeField(default=tbs.models.ApprovalSellRequest.expiry)),
             ],
@@ -33,42 +33,44 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Category',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('category_name', models.CharField(max_length=30)),
             ],
         ),
         migrations.CreateModel(
             name='Item',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('name', models.CharField(max_length=50)),
                 ('description', models.CharField(max_length=500)),
-                ('status', models.CharField(choices=[('reserved', 'Reserved'), ('available', 'Available')], max_length=15)),
-                ('purpose', models.CharField(choices=[('sell', 'Sell'), ('donate', 'Donate')], max_length=10)),
-                ('price', models.FloatField()),
+                ('status', models.CharField(max_length=15)),
+                ('purpose', models.CharField(max_length=10)),
+                ('price', models.FloatField(default=0)),
                 ('picture', models.URLField()),
-                ('stars_required', models.IntegerField()),
-                ('category', models.ForeignKey(to='tbs.Category')),
+                ('stars_required', models.IntegerField(default=0)),
+                ('date_approved', models.DateTimeField(verbose_name='Date Approved', null=True)),
+                ('category', models.ForeignKey(to='tbs.Category', null=True, blank=True)),
             ],
         ),
         migrations.CreateModel(
             name='Notification',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('message', models.CharField(max_length=500)),
-                ('notification_type', models.CharField(choices=[('sell', 'Sell'), ('buy', 'Buy'), ('donate', 'Donate')], max_length=10)),
-                ('status', models.CharField(choices=[('read', 'Read'), ('unread', 'Unread')], max_length=10)),
-                ('admin', models.ForeignKey(related_name='admin', to=settings.AUTH_USER_MODEL)),
-                ('item', models.OneToOneField(to='tbs.Item')),
-                ('user', models.ForeignKey(related_name='user', to=settings.AUTH_USER_MODEL)),
+                ('notification_type', models.CharField(max_length=10)),
+                ('status', models.CharField(default='unread', max_length=10)),
+                ('notification_date', models.DateTimeField(auto_now_add=True)),
+                ('item', models.ForeignKey(to='tbs.Item')),
+                ('maker', models.ForeignKey(default='admin', to=settings.AUTH_USER_MODEL)),
+                ('target', models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='target')),
             ],
         ),
         migrations.CreateModel(
             name='ReservationRequest',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
-                ('reserved_date', models.DateTimeField()),
-                ('request_expiration', models.DateTimeField()),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
+                ('reserved_date', models.DateTimeField(auto_now_add=True)),
+                ('request_expiration', models.DateTimeField(default=tbs.models.ReservationRequest.expiry)),
                 ('status', models.CharField(max_length=10)),
                 ('buyer', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
                 ('item', models.OneToOneField(to='tbs.Item')),
@@ -77,34 +79,51 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Student',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('id_number', models.CharField(max_length=20)),
+                ('first_name', models.CharField(max_length=255)),
+                ('last_name', models.CharField(max_length=255)),
                 ('course', models.CharField(max_length=20)),
             ],
         ),
         migrations.CreateModel(
             name='Transaction',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('date_claimed', models.DateTimeField()),
-                ('buyer', models.ForeignKey(related_name='transactions_as_buyer', to=settings.AUTH_USER_MODEL)),
-                ('item', models.OneToOneField(to='tbs.Item')),
-                ('owner', models.ForeignKey(related_name='transactions_as_owner', to=settings.AUTH_USER_MODEL)),
             ],
+            options={
+                'ordering': ('-date_claimed',),
+            },
         ),
         migrations.CreateModel(
             name='UserProfile',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, serialize=False, primary_key=True)),
+                ('id', models.AutoField(serialize=False, verbose_name='ID', primary_key=True, auto_created=True)),
                 ('stars_collected', models.IntegerField(default=0)),
                 ('student', models.OneToOneField(to='tbs.Student')),
                 ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.AddField(
+            model_name='transaction',
+            name='buyer',
+            field=models.ForeignKey(to='tbs.UserProfile', related_name='transactions_as_buyer'),
+        ),
+        migrations.AddField(
+            model_name='transaction',
+            name='item',
+            field=models.OneToOneField(to='tbs.Item'),
+        ),
+        migrations.AddField(
+            model_name='transaction',
+            name='seller',
+            field=models.ForeignKey(to='tbs.UserProfile', related_name='transactions_as_owner'),
+        ),
+        migrations.AddField(
             model_name='item',
             name='owner',
-            field=models.ForeignKey(to='tbs.Student'),
+            field=models.ForeignKey(to='tbs.UserProfile', related_name='owner'),
         ),
         migrations.AddField(
             model_name='approvalsellrequest',
