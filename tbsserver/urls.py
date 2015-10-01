@@ -20,7 +20,8 @@ router.register(r'available_items', serializers.AvailableItemsViewSet)
 router.register(r'items_to_donate', serializers.ItemsToDonateViewSet)
 router.register(r'all_donations', serializers.AllDonationsViewSet)
 router.register(r'categories', serializers.ListCategoriesViewSet)
-
+router.register(r'search_item', serializers.SearchItemViewSet)
+router.register(r'categorize', serializers.CategorizeViewSet)
 
 
 urlpatterns = [

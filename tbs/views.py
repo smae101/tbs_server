@@ -177,12 +177,8 @@ class SellItemView(View):
 		owner = request.POST.get('owner',None)
 		name = request.POST.get('name',None)
 		description = request.POST.get('description',None)
-		#category = request.POST.get('category',None)
-		#status = request.POST.get('status',None)
-		#purpose = request.POST.get('purpose',None)
 		price = request.POST.get('price',None)
-		#picture = request.POST.get('picture',None)
-		#stars_required = request.POST.get('stars_required',None)
+		picture = request.POST.get('url', None)
 
 		user = User.objects.get(username=owner)
 		if user is None :
@@ -204,7 +200,7 @@ class SellItemView(View):
 			item.status = "Pending"
 			item.purpose = "Sell"
 			item.price = price
-			item.picture = "https://www.google.com.ph"
+			item.picture = picture
 			item.stars_required = 0
 
 			item.save()
@@ -235,13 +231,110 @@ class SellItemView(View):
 		return render(request, 'sellItem.html')
 
 
+class EditItemView(View):
+	def post(self, request):
+		owner = request.POST.get('owner',None)
+		item_id = request.POST.get('item_id',None)
+		name = request.POST.get('name',None)
+		description = request.POST.get('description',None)
+		price = request.POST.get('price',None)
+
+		user = User.objects.get(username=owner)
+		if user is None :
+			response = {
+				'status': 404,
+				'statusText': 'No username to refer to',
+			}
+			return JsonResponse(response)
+		else:
+			item_owner = UserProfile.objects.get(user=user)
+
+			item = Item.objects.get(id=item_id)
+			item.owner = item_owner
+			item.name = name
+			item.description = description
+			item.category = Category.objects.get(category_name="Others")
+			if item.purpose == "Sell":
+				item.price = price
+			elif item.purpose == "Donate":
+				item.price = 0;
+			item.picture = "https://www.google.com.ph"
+			item.stars_required = 0
+			item.save()
+
+			admin = User.objects.get(username="admin")
+			notif = Notification()
+			notif.target = admin
+			notif.maker = user
+			notif.item = item
+			notif.message = "(Edit) " + item.purpose + " " + item.name
+			notif.notification_type = "edit"
+			notif.status = "unread"
+			notif.save()
+
+			response = {
+				'status': 201,
+				'statusText': item.name + ' has been updated',
+			}
+
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'editItem.html')
+
+
+class DeleteItemView(View):
+	def post(self, request):
+		owner = request.POST.get('owner',None)
+		item_id = request.POST.get('item_id',None)
+
+		user = User.objects.get(username=owner)
+		if user is None :
+			response = {
+				'status': 404,
+				'statusText': 'No username to refer to',
+			}
+			return JsonResponse(response)
+		else:
+			item_owner = UserProfile.objects.get(user=user)
+			item = Item.objects.get(id=item_id, owner=item_owner)
+
+			admin = User.objects.get(username="admin")
+			
+			notif = Notification()
+			notif.target = admin
+			notif.maker = user
+			notif.item = item
+			notif.message = "Cancel: " + item.purpose + " " + item.name
+			notif.notification_type = "delete"
+			notif.status = "unread"
+			notif.save()
+
+			if item.purpose == "Sell":
+				request = ApprovalSellRequest.objects.get(item=item)
+			else:
+				request = ApprovalDonateRequest.objects.get(item=item)
+			request.delete()
+
+			item_name = item.name
+			item.delete()
+
+			response = {
+				'status': 201,
+				'statusText': item_name + ' has been deleted',
+			}
+
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'deleteItem.html')
+
+
 class DonateItemView(View):
 	def post(self, request):
 		owner = request.POST.get('owner',None)
 		name = request.POST.get('name',None)
 		description = request.POST.get('description',None)
-		#picture = request.POST.get('picture',None)
-		#stars_required = request.POST.get('stars_required',None)
 
 		user = User.objects.get(username=owner)
 		if user is None :
@@ -612,7 +705,7 @@ class ReservedItemAvailableView(View):
 			notif.maker = maker
 			notif.item = item
 			notif.message = "This item is now available: " + item.name
-			notif.notification_type = "available"
+			notif.notification_type = "Available"
 			notif.status = "unread"
 			notif.save()
 

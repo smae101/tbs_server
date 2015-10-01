@@ -251,8 +251,21 @@ class SearchItemViewSet(viewsets.ReadOnlyModelViewSet):
 	def get_queryset(self):
 		queryset = models.Item.objects.all()
 
-		query = self.query_params.get('search', None)
+		query = self.request.query_params.get('search', None)
 		if query is not None:
 			queryset.filter(name__icontains=query)
 
 		return queryset
+
+#User: Categorize
+class CategorizeViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		category = self.request.query_params.get('category', None)
+
+		if category is not None:
+			return models.Item.objects.filter(category__category_name=category)
+
+		return super(AllDonationsViewSet, self).get_queryset()
