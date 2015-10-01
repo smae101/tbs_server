@@ -2,8 +2,23 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import tbs.models
 from django.conf import settings
+
+import csv
+import tbs.models
+
+
+def import_students(apps, schema_editor):
+    Student = apps.get_model('tbs', 'Student')
+    dataReader = csv.reader(open('students.csv'), delimiter=',')
+    
+    for row in dataReader:
+        student = Student()
+        student.id_number = row[0]
+        student.first_name = row[1]
+        student.last_name = row[2]
+        student.course = row[3]
+        student.save()
 
 
 class Migration(migrations.Migration):
@@ -140,4 +155,5 @@ class Migration(migrations.Migration):
             name='item',
             field=models.OneToOneField(to='tbs.Item'),
         ),
+        migrations.RunPython(import_students),
     ]
