@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 
 class Student(models.Model):
-	id_number = models.CharField(max_length=20)
+	id_number = models.CharField(max_length=50)
 	first_name = models.CharField(max_length=255)
 	last_name = models.CharField(max_length=255)
 	course = models.CharField(max_length=100)
