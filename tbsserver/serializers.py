@@ -268,4 +268,4 @@ class CategorizeViewSet(viewsets.ReadOnlyModelViewSet):
 		if category is not None:
 			return models.Item.objects.filter(category__category_name=category)
 
-		return super(AllDonationsViewSet, self).get_queryset()
+		return super(CategorizeViewSet, self).get_queryset()

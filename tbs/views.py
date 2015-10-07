@@ -171,7 +171,6 @@ class ChangePasswordView(View):
 		return render(request, 'changePassword.html')
 
 
-
 class SellItemView(View):
 	def post(self, request):
 		owner = request.POST.get('owner',None)
@@ -180,51 +179,58 @@ class SellItemView(View):
 		price = request.POST.get('price',None)
 		picture = request.POST.get('url', None)
 
-		user = User.objects.get(username=owner)
-		if user is None :
-			response = {
-				'status': 404,
-				'statusText': 'No username to refer to',
-			}
-			return JsonResponse(response)
+		if owner and name and description and price:
+			user = User.objects.get(username=owner)
+			if user is None :
+				response = {
+					'status': 404,
+					'statusText': 'No username to refer to',
+				}
+				return JsonResponse(response)
+			else:
+				item_owner = UserProfile.objects.get(user=user)
+
+				approval_sell_request = ApprovalSellRequest()
+
+				item = Item()
+				item.owner = item_owner
+				item.name = name
+				item.description = description
+				item.category = Category.objects.get(category_name="Others")
+				item.status = "Pending"
+				item.purpose = "Sell"
+				item.price = price
+				item.picture = picture
+				item.stars_required = 0
+
+				item.save()
+
+				approval_sell_request.seller = user
+				approval_sell_request.item = item
+				approval_sell_request.save()
+
+
+				admin = User.objects.get(username="admin")
+				notif = Notification()
+				notif.target = admin
+				notif.maker = user
+				notif.item = item
+				notif.message = "Sell " + item.name
+				notif.notification_type = "sell"
+				notif.status = "unread"
+				notif.save()
+
+				response = {
+					'status': 201,
+					'statusText': 'Item created',
+				}
+
+				return JsonResponse(response)
 		else:
-			item_owner = UserProfile.objects.get(user=user)
-
-			approval_sell_request = ApprovalSellRequest()
-
-			item = Item()
-			item.owner = item_owner
-			item.name = name
-			item.description = description
-			item.category = Category.objects.get(category_name="Others")
-			item.status = "Pending"
-			item.purpose = "Sell"
-			item.price = price
-			item.picture = picture
-			item.stars_required = 0
-
-			item.save()
-
-			approval_sell_request.seller = user
-			approval_sell_request.item = item
-			approval_sell_request.save()
-
-
-			admin = User.objects.get(username="admin")
-			notif = Notification()
-			notif.target = admin
-			notif.maker = user
-			notif.item = item
-			notif.message = "Sell " + item.name
-			notif.notification_type = "sell"
-			notif.status = "unread"
-			notif.save()
-
 			response = {
-				'status': 201,
-				'statusText': 'Item created',
+				'status': 403,
+				'statusText': 'Some input parameters are missing.',
 			}
-
 			return JsonResponse(response)
 
 	def get(self, request):
@@ -336,50 +342,57 @@ class DonateItemView(View):
 		name = request.POST.get('name',None)
 		description = request.POST.get('description',None)
 
-		user = User.objects.get(username=owner)
-		if user is None :
-			response = {
-				'status': 404,
-				'statusText': 'No username to refer to',
-			}
-			return JsonResponse(response)
+		if owner and name and description and price:
+			user = User.objects.get(username=owner)
+			if user is None :
+				response = {
+					'status': 404,
+					'statusText': 'No username to refer to',
+				}
+				return JsonResponse(response)
+			else:
+				item_owner = UserProfile.objects.get(user=user)
+
+				approval_donate_request = ApprovalDonateRequest()
+
+				item = Item()
+				item.owner = item_owner
+				item.name = name
+				item.description = description
+				item.category = Category.objects.get(category_name="Others")
+				item.status = "Pending"
+				item.purpose = "Donate"
+				item.picture = "https://www.google.com.ph"
+				item.stars_required = 0
+
+				item.save()
+
+				approval_donate_request.donor = user
+				approval_donate_request.item = item
+				approval_donate_request.save()
+
+
+				admin = User.objects.get(username="admin")
+				notif = Notification()
+				notif.target = admin
+				notif.maker = user
+				notif.item = item
+				notif.message = "Donate " + item.name
+				notif.notification_type = "donate"
+				notif.status = "unread"
+				notif.save()
+
+				response = {
+					'status': 201,
+					'statusText': 'Item created',
+				}
+
+				return JsonResponse(response)
 		else:
-			item_owner = UserProfile.objects.get(user=user)
-
-			approval_donate_request = ApprovalDonateRequest()
-
-			item = Item()
-			item.owner = item_owner
-			item.name = name
-			item.description = description
-			item.category = Category.objects.get(category_name="Others")
-			item.status = "Pending"
-			item.purpose = "Donate"
-			item.picture = "https://www.google.com.ph"
-			item.stars_required = 0
-
-			item.save()
-
-			approval_donate_request.donor = user
-			approval_donate_request.item = item
-			approval_donate_request.save()
-
-
-			admin = User.objects.get(username="admin")
-			notif = Notification()
-			notif.target = admin
-			notif.maker = user
-			notif.item = item
-			notif.message = "Donate " + item.name
-			notif.notification_type = "donate"
-			notif.status = "unread"
-			notif.save()
-
 			response = {
-				'status': 201,
-				'statusText': 'Item created',
+				'status': 403,
+				'statusText': 'Some input parameters are missing.',
 			}
-
 			return JsonResponse(response)
 
 	def get(self, request):
