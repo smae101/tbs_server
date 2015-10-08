@@ -590,7 +590,7 @@ class AdminApproveItemView(View):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		cat = request.POST.get('category',None)
-		status = 'available'
+		status = 'Available'
 
 		if (item_id or request_id or cat) is None:
 			response = {
@@ -773,7 +773,7 @@ class ReservedItemClaimedView(View):
 			return JsonResponse(response)
 
 	def get(self, request):
-		return render(request, 'approveItem.html')
+		return render(request, 'itemClaimed.html')
 
 
 class AdminApproveDonationView(View):
