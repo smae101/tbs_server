@@ -342,6 +342,7 @@ class DonateItemView(View):
 		owner = request.POST.get('owner',None)
 		name = request.POST.get('name',None)
 		description = request.POST.get('description',None)
+		picture = request.POST.get('url', None)
 
 		if owner and name and description and price:
 			user = User.objects.get(username=owner)
@@ -363,7 +364,7 @@ class DonateItemView(View):
 				item.category = Category.objects.get(category_name="Others")
 				item.status = "Pending"
 				item.purpose = "Donate"
-				item.picture = "https://www.google.com.ph"
+				item.picture = picture
 				item.stars_required = 0
 
 				item.save()
