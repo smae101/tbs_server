@@ -592,7 +592,7 @@ class AdminApproveItemView(View):
 		cat = request.POST.get('category',None)
 		status = 'available'
 
-		if (item_id or request_id or category) is None:
+		if (item_id or request_id or cat) is None:
 			response = {
 				'status': 404,
 				'statusText': 'Missing data',
