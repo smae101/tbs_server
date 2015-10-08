@@ -244,6 +244,7 @@ class EditItemView(View):
 		name = request.POST.get('name',None)
 		description = request.POST.get('description',None)
 		price = request.POST.get('price',None)
+		picture = request.POST.get('url', None)
 
 		user = User.objects.get(username=owner)
 		if user is None :
@@ -264,7 +265,7 @@ class EditItemView(View):
 				item.price = price
 			elif item.purpose == "Donate":
 				item.price = 0;
-			item.picture = "https://www.google.com.ph"
+			item.picture = picture
 			item.stars_required = 0
 			item.save()
 
