@@ -92,20 +92,20 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 
 class UserNotificationViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.Notification.objects.all()
+	queryset = models.Notification.objects.all().order_by('-notification_date')
 	serializer_class = NotificationSerializer
 
 	def get_queryset(self):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Notification.objects.filter(target__username__iexact=username, status="unread")
+			return models.Notification.objects.filter(target__username__iexact=username, status="unread").order_by('-notification_date')
 
 		return super(UserNotificationViewSet, self).get_queryset()
 
 
 class AdminNotificationViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.Notification.objects.all()
+	queryset = models.Notification.objects.all().order_by('-notification_date')
 	serializer_class = NotificationSerializer
 
 	def get_queryset(self):
