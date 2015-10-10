@@ -112,7 +112,7 @@ class AdminNotificationViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True)
+			return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True).order_by('-notification_date')
 
 		return super(AdminNotificationViewSet, self).get_queryset()
 
