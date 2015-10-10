@@ -21,5 +21,6 @@ urlpatterns = [
 	url(r'^item_claimed$', views.ReservedItemClaimedView.as_view(), name='item_claimed'),
 	url(r'^admin_approveDonation$', views.AdminApproveDonationView.as_view(), name='admin_approveDonation'),
 	url(r'^admin_disapproveDonation$', views.AdminDisapproveDonationView.as_view(), name='admin_disapproveDonation'),
+	url(r'^read_notification$', views.ReadNotificationView.as_view(), name='read_notification'),
 
 ]

@@ -51,7 +51,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Notification
-		fields = 'target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date'
+		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date'
 
 
 class TransactionSerializer(serializers.ModelSerializer):

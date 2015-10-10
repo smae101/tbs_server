@@ -860,3 +860,27 @@ class AdminDisapproveDonationView(View):
 
 	def get(self, request):
 		return render(request, 'disapproveItem.html')
+
+
+class ReadNotificationView(View):
+	def post(self, request):
+		notif_id = request.POST.get('notification_id',None)
+
+		if notif_id is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			notification = Notification.objects.get(id=notif_id)
+			notification.status = "read"
+			notification.save()
+
+			response = {
+				'status': 200,
+				'statusText': 'Notification status changed  successfully',}
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'readNotification.html')
