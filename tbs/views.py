@@ -344,7 +344,7 @@ class DonateItemView(View):
 		description = request.POST.get('description',None)
 		picture = request.POST.get('url', None)
 
-		if owner and name and description:
+		if owner and name and description and price:
 			user = User.objects.get(username=owner)
 			if user is None :
 				response = {
