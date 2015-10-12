@@ -344,7 +344,7 @@ class DonateItemView(View):
 		description = request.POST.get('description',None)
 		picture = request.POST.get('url', None)
 
-		if owner and name and description and price:
+		if owner and name and description:
 			user = User.objects.get(username=owner)
 			if user is None :
 				response = {
@@ -884,3 +884,29 @@ class ReadNotificationView(View):
 
 	def get(self, request):
 		return render(request, 'readNotification.html')
+
+
+class SetStarsCollectedView(View):
+	def post(self, request):
+		username = request.POST.get('username',None)
+		stars = request.POST.get('stars',None)
+
+		if (username or stars) is None:
+			response = {
+				'status': 404,
+				'statusText': 'Missing data',
+			}
+			return JsonResponse(response)
+		else:
+			user = User.objects.get(username=username)
+			userProfile = UserProfile.objects.get(user=user)
+			userProfile.stars_collected = stars
+			userProfile.save()
+
+			response = {
+				'status': 200,
+				'statusText': 'Collected stars successfully updated',}
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'setStarsCollected.html')
