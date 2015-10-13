@@ -12,6 +12,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
+            model_name='item',
+            name='date_approved',
+            field=models.DateTimeField(verbose_name='Date Approved', null=True, blank=True),
+        ),
+        migrations.AlterField(
             model_name='student',
             name='course',
             field=models.CharField(max_length=100),
