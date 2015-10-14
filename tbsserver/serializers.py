@@ -52,7 +52,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Notification
-		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date', 'notification_expiration'
+		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date'
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -110,11 +110,10 @@ class AdminNotificationViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = NotificationSerializer
 
 	def get_queryset(self):
-		date_now = datetime.now()
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True, notification_expiration__gt = date_now).order_by('-notification_date')
+			return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True).order_by('-notification_date')
 
 		return super(AdminNotificationViewSet, self).get_queryset()
 
