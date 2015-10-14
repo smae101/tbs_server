@@ -405,11 +405,14 @@ class BuyItemView(View):
 	def post(self, request):
 		buyer = request.POST.get('buyer',None)
 		item_id = request.POST.get('item_id',None)
+		discounted = request.POST.get('discounted', None)
 
 		if buyer and item_id:
 			user =  User.objects.get(username=buyer)
 			if user is not None:
 				item = Item.objects.get(id=item_id)
+				if discounted is not None:
+					item.discounted_price = discounted
 				item.status = "Reserved"
 				item.save()
 
@@ -765,6 +768,20 @@ class ReservedItemClaimedView(View):
 			notif.notification_type = "sold"
 			notif.status = "unread"
 			notif.save()
+
+			stars_to_add = 0
+			if item.purpose = 'Sell':
+				stars_to_add = item.price/20
+			else
+				stars_to_add = stars_required/2
+
+			buyer = UserProfile.objects.get(user=maker)
+			buyer.stars_collected = buyer.stars_collected + stars_to_add
+			buyer.save()
+
+			owner = UserProfile.objects.get(user=target)
+			owner.stars_collected = owner.stars_collected + stars_to_add
+			owner.save()
 
 			request = ReservationRequest.objects.get(id=request_id)
 			request.delete()
