@@ -182,7 +182,7 @@ class ItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Sell").exclude(status="sold")
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Sell").exclude(status="sold", status="pending")
 
 		return super(ItemsToSellViewSet, self).get_queryset()
 
@@ -221,7 +221,7 @@ class ItemsToDonateViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Donate").exclude(status="sold")
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Donate").exclude(status="sold", status="pending")
 
 		return super(ItemsToDonateViewSet, self).get_queryset()
 
@@ -269,3 +269,22 @@ class CategorizeViewSet(viewsets.ReadOnlyModelViewSet):
 			return models.Item.objects.filter(category__category_name=category)
 
 		return super(CategorizeViewSet, self).get_queryset()
+
+
+class SortItemsViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		sortby = self.request.query_params.get('category', None)
+		username = self.request.query_params.get('username', None)
+		purpose = self.request.query_params.get('purpose', None)
+
+		if sortby is not None:
+			if sortby == 'price' or sortby == 'name':
+				if purpose == 'Sell':
+					return models.Item.objects.filter(status="Available", purpose="Sell").exclude(owner__user__username__iexact = username).order_by(sortby)
+				elif purpose == 'Donate':
+					return models.Item.objects.filter(status="Available", purpose="Donate").exclude(owner__user__username__iexact = username).order_by(sortby)
+
+		return super(SortItemsViewSet, self).get_queryset()

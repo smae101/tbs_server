@@ -28,6 +28,7 @@ router.register(r'all_donations', serializers.AllDonationsViewSet)
 router.register(r'categories', serializers.ListCategoriesViewSet)
 router.register(r'search_item', serializers.SearchItemViewSet)
 router.register(r'categorize', serializers.CategorizeViewSet)
+router.register(r'sort_items', serializers.SortItemsViewSet)
 
 
 urlpatterns = [
