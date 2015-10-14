@@ -221,7 +221,7 @@ class ItemsToDonateViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, status="Available", purpose="Donate")
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Donate").exclude(status="sold")
 
 		return super(ItemsToDonateViewSet, self).get_queryset()
 
