@@ -111,8 +111,9 @@ class Transaction(models.Model):
 
 
 class Notification(models.Model):
-	def expiry():
+	def expiration():
 		return datetime.now() + timedelta(days=3)
+
 	notif_type = (
 		('sell','Sell'),
 		('buy','Buy'),
@@ -132,7 +133,7 @@ class Notification(models.Model):
 	#status = models.CharField(max_length=10, choices=status_type, default='unread')
 	status = models.CharField(max_length=10, default='unread')
 	notification_date = models.DateTimeField(auto_now_add=True)
-	notification_expiration = models.DateTimeField(default=expiry)
+	notification_expiration = models.DateTimeField(default=expiration)
 
 	def __str__(self):
 		return str(self.message)

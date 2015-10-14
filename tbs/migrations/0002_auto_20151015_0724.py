@@ -20,6 +20,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='notification',
             name='notification_expiration',
-            field=models.DateTimeField(default=tbs.models.Notification.expiry),
+            field=models.DateTimeField(default=tbs.models.Notification.expiration),
         ),
     ]
