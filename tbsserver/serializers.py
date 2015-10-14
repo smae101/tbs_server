@@ -4,6 +4,7 @@ from tbs import models
 
 from rest_framework import serializers, viewsets
 
+from datetime import datetime, timedelta
 
 class StudentSerializer(serializers.ModelSerializer):
 
@@ -51,7 +52,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Notification
-		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date'
+		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date', 'notification_expiration'
 
 
 class TransactionSerializer(serializers.ModelSerializer):
@@ -109,10 +110,11 @@ class AdminNotificationViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = NotificationSerializer
 
 	def get_queryset(self):
+		date_now = datetime.now()
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True).order_by('-notification_date')
+			return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True, notification_expiration__gt = date_now).order_by('-notification_date')
 
 		return super(AdminNotificationViewSet, self).get_queryset()
 
@@ -136,40 +138,47 @@ class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SellApprovalViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.ApprovalSellRequest.objects.filter()
+	date_now = datetime.now()
+	queryset = models.ApprovalSellRequest.objects.filter(request_expiration__gt = date_now)
 	serializer_class = SellApprovalSerializer
+	print(date_now)
 
 	def get_queryset(self):
+		date_now = datetime.now()
 		request_id = self.request.query_params.get('request_id',None)
 
 		if request_id is not None:
-			return models.ApprovalSellRequest.objects.filter(id = request_id)
+			return models.ApprovalSellRequest.objects.filter(id = request_id, request_expiration__gt = date_now)
 
 		return super(SellApprovalViewSet, self).get_queryset()
 
 
 class DonateApprovalViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.ApprovalDonateRequest.objects.all()
+	date_now = datetime.now()
+	queryset = models.ApprovalDonateRequest.objects.filter(request_expiration__gt = date_now)
 	serializer_class = DonateApprovalSerializer
 
 	def get_queryset(self):
+		date_now = datetime.now()
 		request_id = self.request.query_params.get('request_id',None)
 
 		if request_id is not None:
-			return models.ApprovalDonateRequest.objects.filter(id = request_id)
+			return models.ApprovalDonateRequest.objects.filter(id = request_id, request_expiration__gt = date_now)
 
 		return super(DonateApprovalViewSet, self).get_queryset()
 
 
 class ReservationViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.ReservationRequest.objects.all()
+	date_now = datetime.now()
+	queryset = models.ReservationRequest.objects.filter(request_expiration__gt = date_now)
 	serializer_class = ReservationSerializer
 
 	def get_queryset(self):
+		date_now = datetime.now()
 		request_id = self.request.query_params.get('request_id',None)
 
 		if request_id is not None:
-			return models.ReservationRequest.objects.filter(id = request_id)
+			return models.ReservationRequest.objects.filter(id = request_id, request_expiration__gt = date_now)
 
 		return super(ReservationViewSet, self).get_queryset()
 

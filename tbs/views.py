@@ -181,6 +181,8 @@ class SellItemView(View):
 
 		if owner and name and description and price:
 			user = User.objects.get(username=owner)
+			print (owner)
+			print (user)
 			if user is None :
 				response = {
 					'status': 404,
