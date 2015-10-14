@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-from django.conf import settings
 import tbs.models
+from django.conf import settings
 
 
 class Migration(migrations.Migration):
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ApprovalDonateRequest',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('request_date', models.DateTimeField(auto_now_add=True)),
                 ('request_expiration', models.DateTimeField(default=tbs.models.ApprovalDonateRequest.expiry)),
                 ('donor', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ApprovalSellRequest',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('request_date', models.DateTimeField(auto_now_add=True)),
                 ('request_expiration', models.DateTimeField(default=tbs.models.ApprovalSellRequest.expiry)),
             ],
@@ -33,42 +33,44 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Category',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('category_name', models.CharField(max_length=30)),
             ],
         ),
         migrations.CreateModel(
             name='Item',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('name', models.CharField(max_length=50)),
                 ('description', models.CharField(max_length=500)),
                 ('status', models.CharField(max_length=15)),
                 ('purpose', models.CharField(max_length=10)),
                 ('price', models.FloatField(default=0)),
+                ('discounted_price', models.FloatField(default=0)),
                 ('picture', models.URLField()),
                 ('stars_required', models.IntegerField(default=0)),
-                ('date_approved', models.DateTimeField(verbose_name='Date Approved', blank=True, null=True)),
-                ('category', models.ForeignKey(blank=True, null=True, to='tbs.Category')),
+                ('date_approved', models.DateTimeField(null=True, verbose_name='Date Approved', blank=True)),
+                ('category', models.ForeignKey(null=True, blank=True, to='tbs.Category')),
             ],
         ),
         migrations.CreateModel(
             name='Notification',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('message', models.CharField(max_length=500)),
                 ('notification_type', models.CharField(max_length=10)),
-                ('status', models.CharField(max_length=10, default='unread')),
+                ('status', models.CharField(default='unread', max_length=10)),
                 ('notification_date', models.DateTimeField(auto_now_add=True)),
+                ('notification_expiration', models.DateTimeField(default=tbs.models.Notification.expiration)),
                 ('item', models.ForeignKey(to='tbs.Item')),
-                ('maker', models.ForeignKey(to=settings.AUTH_USER_MODEL, default='admin')),
+                ('maker', models.ForeignKey(default='admin', to=settings.AUTH_USER_MODEL)),
                 ('target', models.ForeignKey(related_name='target', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
             name='ReservationRequest',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('reserved_date', models.DateTimeField(auto_now_add=True)),
                 ('request_expiration', models.DateTimeField(default=tbs.models.ReservationRequest.expiry)),
                 ('status', models.CharField(max_length=10)),
@@ -79,7 +81,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Student',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('id_number', models.CharField(max_length=50)),
                 ('first_name', models.CharField(max_length=255)),
                 ('last_name', models.CharField(max_length=255)),
@@ -89,7 +91,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Transaction',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('date_claimed', models.DateTimeField()),
             ],
             options={
@@ -99,7 +101,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='UserProfile',
             fields=[
-                ('id', models.AutoField(verbose_name='ID', auto_created=True, primary_key=True, serialize=False)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
                 ('stars_collected', models.IntegerField(default=0)),
                 ('student', models.OneToOneField(to='tbs.Student')),
                 ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
