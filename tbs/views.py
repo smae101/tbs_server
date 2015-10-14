@@ -772,7 +772,7 @@ class ReservedItemClaimedView(View):
 			stars_to_add = 0
 			if item.purpose == 'Sell':
 				stars_to_add = item.price/20
-			else
+			else:
 				stars_to_add = stars_required/2
 
 			buyer = UserProfile.objects.get(user=maker)
