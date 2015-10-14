@@ -770,7 +770,7 @@ class ReservedItemClaimedView(View):
 			notif.save()
 
 			stars_to_add = 0
-			if item.purpose = 'Sell':
+			if item.purpose == 'Sell':
 				stars_to_add = item.price/20
 			else
 				stars_to_add = stars_required/2
