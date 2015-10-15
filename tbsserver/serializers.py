@@ -42,7 +42,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Item
-		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'discounted_price', 'picture', 'stars_required'
+		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'picture', 'stars_required'
 
 
 class NotificationSerializer(serializers.ModelSerializer):
