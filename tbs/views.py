@@ -773,6 +773,8 @@ class ReservedItemClaimedView(View):
 			}
 			return JsonResponse(response)
 		else:
+			request = ReservationRequest.objects.get(id=request_id)
+
 			item = Item.objects.get(id=item_id)
 			item.status = status
 			item.save()
@@ -795,7 +797,7 @@ class ReservedItemClaimedView(View):
 			else:
 				stars_to_add = stars_required/2
 
-			buyer = UserProfile.objects.get(user=maker)
+			buyer = UserProfile.objects.get(user=request.buyer)
 			buyer.stars_collected = buyer.stars_collected + stars_to_add
 			buyer.save()
 
@@ -803,7 +805,6 @@ class ReservedItemClaimedView(View):
 			owner.stars_collected = owner.stars_collected + stars_to_add
 			owner.save()
 
-			request = ReservationRequest.objects.get(id=request_id)
 			request.delete()
 
 			response = {
