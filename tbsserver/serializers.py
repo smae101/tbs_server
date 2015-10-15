@@ -284,20 +284,24 @@ class SortItemsViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = ItemSerializer
 
 	def get_queryset(self):
-		sortby = self.request.query_params.get('category', None)
+		sortby = self.request.query_params.get('sortby', None)
 		username = self.request.query_params.get('username', None)
 		purpose = self.request.query_params.get('purpose', None)
 
-		if sortby is not None:
-			if sortby == 'price' or sortby == 'name':
-				if purpose == 'Sell':
-					return models.Item.objects.filter(status="Available", purpose="Sell").exclude(owner__user__username__iexact = username).order_by(sortby)
-				elif purpose == 'Donate':
-					return models.Item.objects.filter(status="Available", purpose="Donate").exclude(owner__user__username__iexact = username).order_by(sortby)
-			elif sortby == 'date':
-				if purpose == 'Sell':
-					return models.Item.objects.filter(status="Available", purpose="Sell").exclude(owner__user__username__iexact = username).order_by('-date_approved')
-				elif purpose == 'Donate':
-					return models.Item.objects.filter(status="Available", purpose="Donate").exclude(owner__user__username__iexact = username).order_by('-date_approved')
+		if sortby == 'price':
+			if purpose == 'Sell':
+				return models.Item.objects.filter(status="Available", purpose="Sell").exclude(owner__user__username__iexact = username).order_by('price')
+			elif purpose == 'Donate':
+				return models.Item.objects.filter(status="Available", purpose="Donate").exclude(owner__user__username__iexact = username).order_by('price')
+		elif sortby == 'name':
+			if purpose == 'Sell':
+				return models.Item.objects.filter(status="Available", purpose="Sell").exclude(owner__user__username__iexact = username).order_by('name')
+			elif purpose == 'Donate':
+				return models.Item.objects.filter(status="Available", purpose="Donate").exclude(owner__user__username__iexact = username).order_by('name')
+		elif sortby == 'date':
+			if purpose == 'Sell':
+				return models.Item.objects.filter(status="Available", purpose="Sell").exclude(owner__user__username__iexact = username).order_by('-date_approved')
+			elif purpose == 'Donate':
+				return models.Item.objects.filter(status="Available", purpose="Donate").exclude(owner__user__username__iexact = username).order_by('-date_approved')
 
 		return super(SortItemsViewSet, self).get_queryset()
