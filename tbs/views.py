@@ -813,7 +813,7 @@ class AdminApproveDonationView(View):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		stars = request.POST.get('stars_required',None)
-		status = 'available'
+		status = 'Available'
 
 		if (item_id or request_id or stars) is None:
 			response = {
