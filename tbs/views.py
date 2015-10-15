@@ -657,7 +657,7 @@ class AdminDisapproveItemView(View):
 	def post(self, request):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
-		status = 'disapproved'
+		status = 'Disapproved'
 
 		if (item_id or request_id) is None:
 			response = {
@@ -723,7 +723,7 @@ class ReservedItemAvailableView(View):
 		expiry = datetime.now() + timedelta(days=3)
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
-		status = 'available'
+		status = 'Available'
 
 		if (item_id or request_id) is None:
 			response = {
@@ -747,7 +747,7 @@ class ReservedItemAvailableView(View):
 			notif.save()
 
 			request = ReservationRequest.objects.get(id=request_id)
-			request.status = "available"
+			request.status = status
 			request.request_expiration = expiry
 			request.save()
 
@@ -764,7 +764,7 @@ class ReservedItemClaimedView(View):
 	def post(self, request):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
-		status = 'sold'
+		status = 'Sold'
 
 		if (item_id or request_id) is None:
 			response = {
@@ -863,7 +863,7 @@ class AdminDisapproveDonationView(View):
 	def post(self, request):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
-		status = 'disapproved'
+		status = 'Disapproved'
 
 		if (item_id or request_id) is None:
 			response = {
