@@ -805,6 +805,13 @@ class ReservedItemClaimedView(View):
 			owner.stars_collected = owner.stars_collected + stars_to_add
 			owner.save()
 
+			transaction = Transaction()
+			transaction.item = item
+			transaction.seller = owner
+			transaction.buyer = buyer
+			transaction.date_claimed = datetime.now()
+			transaction.save()
+
 			request.delete()
 
 			response = {
