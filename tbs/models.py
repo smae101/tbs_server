@@ -49,7 +49,6 @@ class Item(models.Model):
 	#purpose = models.CharField(max_length=10, choices=purpose_type)
 	purpose = models.CharField(max_length=10)
 	price = models.FloatField(default=0)
-	discounted_price = models.FloatField(default=0)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
 	date_approved = models.DateTimeField("Date Approved", null=True, blank=True)
