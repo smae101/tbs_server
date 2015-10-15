@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.http import QueryDict, JsonResponse
 from django.shortcuts import render
+from django.utils import dateparse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
@@ -718,9 +719,8 @@ class AddCategoryView(View):
 
 
 class ReservedItemAvailableView(View):
-	def expiry():
-		return datetime.now() + timedelta(days=3)
 	def post(self, request):
+		expiry = datetime.now() + timedelta(days=3)
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		status = 'available'
