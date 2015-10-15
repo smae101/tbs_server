@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
@@ -717,6 +718,8 @@ class AddCategoryView(View):
 
 
 class ReservedItemAvailableView(View):
+	def expiry():
+		return datetime.now() + timedelta(days=3)
 	def post(self, request):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
@@ -745,6 +748,7 @@ class ReservedItemAvailableView(View):
 
 			request = ReservationRequest.objects.get(id=request_id)
 			request.status = "available"
+			request.request_expiration = expiry
 			request.save()
 
 			response = {
