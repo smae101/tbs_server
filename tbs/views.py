@@ -23,23 +23,34 @@ class RegisterView(View):
 			try:
 				student = Student.objects.get(id_number=id_number,first_name__iexact=first_name,last_name__iexact=last_name)
 
-				user_profile = UserProfile()
+				user_profile = UserProfile.objects.filter(student__pk=student.pk)
 
-				user = User()
-				user.username = username
-				user.set_password(password)
-				user.first_name = first_name
-				user.last_name = last_name
-				user.save()
+				# if muregister nga lahi username pero same student
+				if user_profile:
+					response = {
+						'status': 400,
+						'statusText': 'Student already exists'
+					}
 
-				user_profile.user = user
-				user_profile.student = student
-				user_profile.save()
+				else:
+					user_profile = UserProfile()
 
-				response = {
-					'status': 201,
-					'statusText': 'User created',
-				}
+					user = User()
+					user.username = username
+					user.set_password(password)
+					user.first_name = first_name
+					user.last_name = last_name
+					user.save()
+
+					user_profile.user = user
+					user_profile.student = student
+					user_profile.save()
+
+					response = {
+						'status': 201,
+						'statusText': 'User created',
+					}
+
 			except Student.DoesNotExist:
 				response = {
 					'status': 404,
