@@ -49,6 +49,7 @@ class Item(models.Model):
 	#purpose = models.CharField(max_length=10, choices=purpose_type)
 	purpose = models.CharField(max_length=10)
 	price = models.FloatField(default=0)
+	discounted_price = models.FloatField(default=0)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
 	date_approved = models.DateTimeField("Date Approved", null=True, blank=True)
@@ -110,7 +111,8 @@ class Transaction(models.Model):
 
 
 class Notification(models.Model):
-
+	def expiry():
+		return datetime.now() + timedelta(days=3)
 	notif_type = (
 		('sell','Sell'),
 		('buy','Buy'),
@@ -130,6 +132,7 @@ class Notification(models.Model):
 	#status = models.CharField(max_length=10, choices=status_type, default='unread')
 	status = models.CharField(max_length=10, default='unread')
 	notification_date = models.DateTimeField(auto_now_add=True)
+	notification_expiration = models.DateTimeField(default=expiry)
 
 
 	def __str__(self):
