@@ -10,6 +10,8 @@ from rest_framework.parsers import JSONParser
 
 from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest
 
+from datetime import datetime
+
 
 class RegisterView(View):
 	def post(self, request):
@@ -622,6 +624,7 @@ class AdminApproveItemView(View):
 			item = Item.objects.get(id=item_id)
 			item.category = category
 			item.status = status
+			item.date_approved = datetime.now()
 			item.save()
 
 			target = User.objects.get(username=item.owner.user.username)
@@ -824,6 +827,7 @@ class AdminApproveDonationView(View):
 		else:
 			item = Item.objects.get(id=item_id)
 			item.status = status
+			item.date_approved = datetime.now()
 			item.stars_required = stars
 			item.save()
 
