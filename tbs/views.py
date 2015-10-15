@@ -757,7 +757,7 @@ class ReservedItemAvailableView(View):
 			return JsonResponse(response)
 
 	def get(self, request):
-		return render(request, 'approveItem.html')
+		return render(request, 'itemAvailable.html')
 
 
 class ReservedItemClaimedView(View):
