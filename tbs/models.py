@@ -60,7 +60,7 @@ class Item(models.Model):
 
 class ApprovalSellRequest(models.Model):
 	def expiry():
-		return datetime.now() + timedelta(days=3)
+		return (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
 
 	seller = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
@@ -73,7 +73,7 @@ class ApprovalSellRequest(models.Model):
 
 class ApprovalDonateRequest(models.Model):
 	def expiry():
-		return datetime.now() + timedelta(days=3)
+		return (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
 
 	donor = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
@@ -86,7 +86,7 @@ class ApprovalDonateRequest(models.Model):
 
 class ReservationRequest(models.Model):
 	def expiry():
-		return datetime.now() + timedelta(days=3)
+		return (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
 	buyer = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
 	reserved_date = models.DateTimeField(auto_now_add=True)
@@ -112,7 +112,7 @@ class Transaction(models.Model):
 
 class Notification(models.Model):
 	def expiry():
-		return datetime.now() + timedelta(days=3)
+		return (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
 	notif_type = (
 		('sell','Sell'),
 		('buy','Buy'),

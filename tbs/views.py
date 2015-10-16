@@ -631,7 +631,7 @@ class AdminApproveItemView(View):
 			item = Item.objects.get(id=item_id)
 			item.category = category
 			item.status = status
-			item.date_approved = datetime.now()
+			item.date_approved = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 			item.save()
 
 			target = User.objects.get(username=item.owner.user.username)
@@ -753,7 +753,7 @@ class ReservedItemAvailableView(View):
 
 			request = ReservationRequest.objects.get(id=request_id)
 			request.status = status
-			request.request_expiration = expiry
+			request.request_expiration = expiry.strftime("%Y-%m-%d %H:%M:%S")
 			request.save()
 
 			response = {
@@ -814,7 +814,7 @@ class ReservedItemClaimedView(View):
 			transaction.item = item
 			transaction.seller = owner
 			transaction.buyer = buyer
-			transaction.date_claimed = datetime.now()
+			transaction.date_claimed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 			transaction.save()
 
 			request.delete()
@@ -844,7 +844,7 @@ class AdminApproveDonationView(View):
 		else:
 			item = Item.objects.get(id=item_id)
 			item.status = status
-			item.date_approved = datetime.now()
+			item.date_approved = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 			item.stars_required = stars
 			item.save()
 
