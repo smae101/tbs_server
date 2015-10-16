@@ -46,11 +46,11 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(max_length=15)),
                 ('purpose', models.CharField(max_length=10)),
                 ('price', models.FloatField(default=0)),
-                ('discounted_price', models.FloatField(default=0)),
+                ('stars_to_use', models.IntegerField(default=0)),
                 ('picture', models.URLField()),
                 ('stars_required', models.IntegerField(default=0)),
                 ('date_approved', models.DateTimeField(blank=True, null=True, verbose_name='Date Approved')),
-                ('category', models.ForeignKey(blank=True, to='tbs.Category', null=True)),
+                ('category', models.ForeignKey(to='tbs.Category', null=True, blank=True)),
             ],
         ),
         migrations.CreateModel(
@@ -63,8 +63,8 @@ class Migration(migrations.Migration):
                 ('notification_date', models.DateTimeField(auto_now_add=True)),
                 ('notification_expiration', models.DateTimeField(default=tbs.models.Notification.expiry)),
                 ('item', models.ForeignKey(to='tbs.Item')),
-                ('maker', models.ForeignKey(to=settings.AUTH_USER_MODEL, default='admin')),
-                ('target', models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='target')),
+                ('maker', models.ForeignKey(default='admin', to=settings.AUTH_USER_MODEL)),
+                ('target', models.ForeignKey(related_name='target', to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(
@@ -110,7 +110,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='transaction',
             name='buyer',
-            field=models.ForeignKey(to='tbs.UserProfile', related_name='transactions_as_buyer'),
+            field=models.ForeignKey(related_name='transactions_as_buyer', to='tbs.UserProfile'),
         ),
         migrations.AddField(
             model_name='transaction',
@@ -120,12 +120,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='transaction',
             name='seller',
-            field=models.ForeignKey(to='tbs.UserProfile', related_name='transactions_as_owner'),
+            field=models.ForeignKey(related_name='transactions_as_owner', to='tbs.UserProfile'),
         ),
         migrations.AddField(
             model_name='item',
             name='owner',
-            field=models.ForeignKey(to='tbs.UserProfile', related_name='owner'),
+            field=models.ForeignKey(related_name='owner', to='tbs.UserProfile'),
         ),
         migrations.AddField(
             model_name='approvalsellrequest',
