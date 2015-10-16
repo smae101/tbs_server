@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.http import QueryDict, JsonResponse
 from django.shortcuts import render
+from django.utils import dateparse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
@@ -434,7 +436,7 @@ class BuyItemView(View):
 				reservation_request = ReservationRequest()
 				reservation_request.buyer = user
 				reservation_request.item = item
-				reservation_request.status = "Available"
+				reservation_request.status = "Reserved"
 				reservation_request.save()
 
 				notif_admin = Notification()
@@ -556,7 +558,7 @@ class GetDonatedItemView(View):
 					reservation_request = ReservationRequest()
 					reservation_request.buyer = user
 					reservation_request.item = item
-					reservation_request.status = "Available"
+					reservation_request.status = "Reserved"
 					reservation_request.save()
 
 					notif_admin = Notification()
@@ -655,7 +657,7 @@ class AdminDisapproveItemView(View):
 	def post(self, request):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
-		status = 'disapproved'
+		status = 'Disapproved'
 
 		if (item_id or request_id) is None:
 			response = {
@@ -718,9 +720,10 @@ class AddCategoryView(View):
 
 class ReservedItemAvailableView(View):
 	def post(self, request):
+		expiry = datetime.now() + timedelta(days=3)
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
-		status = 'available'
+		status = 'Available'
 
 		if (item_id or request_id) is None:
 			response = {
@@ -744,7 +747,8 @@ class ReservedItemAvailableView(View):
 			notif.save()
 
 			request = ReservationRequest.objects.get(id=request_id)
-			request.status = "available"
+			request.status = status
+			request.request_expiration = expiry
 			request.save()
 
 			response = {
@@ -753,14 +757,14 @@ class ReservedItemAvailableView(View):
 			return JsonResponse(response)
 
 	def get(self, request):
-		return render(request, 'approveItem.html')
+		return render(request, 'itemAvailable.html')
 
 
 class ReservedItemClaimedView(View):
 	def post(self, request):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
-		status = 'sold'
+		status = 'Sold'
 
 		if (item_id or request_id) is None:
 			response = {
@@ -769,6 +773,8 @@ class ReservedItemClaimedView(View):
 			}
 			return JsonResponse(response)
 		else:
+			request = ReservationRequest.objects.get(id=request_id)
+
 			item = Item.objects.get(id=item_id)
 			item.status = status
 			item.save()
@@ -791,7 +797,7 @@ class ReservedItemClaimedView(View):
 			else:
 				stars_to_add = stars_required/2
 
-			buyer = UserProfile.objects.get(user=maker)
+			buyer = UserProfile.objects.get(user=request.buyer)
 			buyer.stars_collected = buyer.stars_collected + stars_to_add
 			buyer.save()
 
@@ -799,7 +805,13 @@ class ReservedItemClaimedView(View):
 			owner.stars_collected = owner.stars_collected + stars_to_add
 			owner.save()
 
-			request = ReservationRequest.objects.get(id=request_id)
+			transaction = Transaction()
+			transaction.item = item
+			transaction.seller = owner
+			transaction.buyer = buyer
+			transaction.date_claimed = datetime.now()
+			transaction.save()
+
 			request.delete()
 
 			response = {
@@ -859,7 +871,7 @@ class AdminDisapproveDonationView(View):
 	def post(self, request):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
-		status = 'disapproved'
+		status = 'Disapproved'
 
 		if (item_id or request_id) is None:
 			response = {
