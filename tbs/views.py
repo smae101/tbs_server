@@ -436,7 +436,7 @@ class BuyItemView(View):
 				reservation_request = ReservationRequest()
 				reservation_request.buyer = user
 				reservation_request.item = item
-				reservation_request.status = "Available"
+				reservation_request.status = "Reserved"
 				reservation_request.save()
 
 				notif_admin = Notification()
@@ -558,7 +558,7 @@ class GetDonatedItemView(View):
 					reservation_request = ReservationRequest()
 					reservation_request.buyer = user
 					reservation_request.item = item
-					reservation_request.status = "Available"
+					reservation_request.status = "Reserved"
 					reservation_request.save()
 
 					notif_admin = Notification()
