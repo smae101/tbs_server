@@ -252,7 +252,7 @@ class ListCategoriesViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = CategorySerializer
 
 	def get_queryset(self):
-		return models.Category.objects.all.order_by('category_name')
+		return models.Category.objects.order_by('category_name')
 
 
 class SearchItemViewSet(viewsets.ReadOnlyModelViewSet):
