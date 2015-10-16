@@ -422,14 +422,14 @@ class BuyItemView(View):
 	def post(self, request):
 		buyer = request.POST.get('buyer',None)
 		item_id = request.POST.get('item_id',None)
-		discounted = request.POST.get('discounted', None)
+		stars_to_use = request.POST.get('stars_to_use', None)
 
 		if buyer and item_id:
 			user =  User.objects.get(username=buyer)
 			if user is not None:
 				item = Item.objects.get(id=item_id)
-				if discounted is not None:
-					item.discounted_price = discounted
+				if stars_to_use is not None:
+					item.stars_to_use = stars_to_use
 				item.status = "Reserved"
 				item.save()
 
@@ -490,6 +490,11 @@ class CancelReservedItemView(View):
 			user =  User.objects.get(username=buyer)
 			if user is not None:
 				item = Item.objects.get(id=item_id)
+				buyerProfile = UserProfile.objects.get(user=user)
+				if item.stars_to_use != 0:
+					buyerProfile.stars_collected = buyerProfile.stars_collected + item.stars_to_use
+					buyerProfile.save()
+					item.stars_to_use = 0
 				item.status = "Available"
 				item.save()
 
