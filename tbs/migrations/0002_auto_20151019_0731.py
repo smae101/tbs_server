@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='approvaldonaterequest',
             name='request_date',
-            field=unixtimestampfield.fields.UnixTimeStampField(default=tbs.models.ApprovalDonateRequest.date_now),
+            field=unixtimestampfield.fields.UnixTimeStampField(default=tbs.models.ApprovalDonateRequest.donate_date_now),
         ),
         migrations.AlterField(
             model_name='approvaldonaterequest',
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='approvalsellrequest',
             name='request_date',
-            field=unixtimestampfield.fields.UnixTimeStampField(default=tbs.models.ApprovalSellRequest.date_now),
+            field=unixtimestampfield.fields.UnixTimeStampField(default=tbs.models.ApprovalSellRequest.sell_date_now),
         ),
         migrations.AlterField(
             model_name='approvalsellrequest',
@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='reservationrequest',
             name='reserved_date',
-            field=unixtimestampfield.fields.UnixTimeStampField(default=tbs.models.ReservationRequest.date_now),
+            field=unixtimestampfield.fields.UnixTimeStampField(default=tbs.models.ReservationRequest.reserve_date_now),
         ),
         migrations.AlterField(
             model_name='transaction',

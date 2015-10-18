@@ -66,14 +66,14 @@ class ApprovalSellRequest(models.Model):
 		unix =  mktime(date.timetuple())
 		return unix
 
-	def date_now():
+	def sell_date_now():
 		date = datetime.now()
 		unix = mktime(date.timetuple())
 		return unix
 
 	seller = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
-	request_date = UnixTimeStampField(use_numeric=True, default=date_now)
+	request_date = UnixTimeStampField(use_numeric=True, default=sell_date_now)
 	request_expiration = UnixTimeStampField(use_numeric=True, default=expiry)
 
 	def __str__(self):
@@ -86,14 +86,14 @@ class ApprovalDonateRequest(models.Model):
 		unix =  mktime(date.timetuple())
 		return unix
 
-	def date_now():
+	def donate_date_now():
 		date = datetime.now()
 		unix = mktime(date.timetuple())
 		return unix
 
 	donor = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
-	request_date = UnixTimeStampField(use_numeric=True, default=date_now)
+	request_date = UnixTimeStampField(use_numeric=True, default=donate_date_now)
 	request_expiration = UnixTimeStampField(use_numeric=True, default=expiry)
 
 	def __str__(self):
@@ -106,14 +106,14 @@ class ReservationRequest(models.Model):
 		unix =  mktime(date.timetuple())
 		return unix
 
-	def date_now():
+	def reserve_date_now():
 		date = datetime.now()
 		unix = mktime(date.timetuple())
 		return unix
 
 	buyer = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
-	reserved_date = UnixTimeStampField(use_numeric=True, default=date_now)
+	reserved_date = UnixTimeStampField(use_numeric=True, default=reserve_date_now)
 	request_expiration = UnixTimeStampField(use_numeric=True, default=expiry)
 	status = models.CharField(max_length=10)
 
