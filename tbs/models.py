@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 from datetime import datetime, timedelta
-
+from time import mktime
+from unixtimestampfield.fields import UnixTimeStampField
 
 class Student(models.Model):
 	id_number = models.CharField(max_length=50)
@@ -52,7 +54,7 @@ class Item(models.Model):
 	stars_to_use = models.IntegerField(default=0)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
-	date_approved = models.DateTimeField("Date Approved", null=True, blank=True)
+	date_approved = UnixTimeStampField(use_numeric=True, default=0.0)
 
 	def __str__(self):
 		return self.name
@@ -60,12 +62,19 @@ class Item(models.Model):
 
 class ApprovalSellRequest(models.Model):
 	def expiry():
-		return (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
+		date = datetime.now() + timedelta(days=3)
+		unix =  mktime(date.timetuple())
+		return unix
+
+	def date_now():
+		date = datetime.now()
+		unix = mktime(date.timetuple())
+		return unix
 
 	seller = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
-	request_date = models.DateTimeField(auto_now_add=True)
-	request_expiration = models.DateTimeField(default=expiry)
+	request_date = UnixTimeStampField(use_numeric=True, default=date_now)
+	request_expiration = UnixTimeStampField(use_numeric=True, default=expiry)
 
 	def __str__(self):
 		return self.item.name
@@ -73,12 +82,19 @@ class ApprovalSellRequest(models.Model):
 
 class ApprovalDonateRequest(models.Model):
 	def expiry():
-		return (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
+		date = datetime.now() + timedelta(days=3)
+		unix =  mktime(date.timetuple())
+		return unix
+
+	def date_now():
+		date = datetime.now()
+		unix = mktime(date.timetuple())
+		return unix
 
 	donor = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
-	request_date = models.DateTimeField(auto_now_add=True)
-	request_expiration = models.DateTimeField(default=expiry)
+	request_date = UnixTimeStampField(use_numeric=True, default=date_now)
+	request_expiration = UnixTimeStampField(use_numeric=True, default=expiry)
 
 	def __str__(self):
 		return self.item.name
@@ -86,11 +102,19 @@ class ApprovalDonateRequest(models.Model):
 
 class ReservationRequest(models.Model):
 	def expiry():
-		return (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
+		date = datetime.now() + timedelta(days=3)
+		unix =  mktime(date.timetuple())
+		return unix
+
+	def date_now():
+		date = datetime.now()
+		unix = mktime(date.timetuple())
+		return unix
+
 	buyer = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
-	reserved_date = models.DateTimeField(auto_now_add=True)
-	request_expiration = models.DateTimeField(default=expiry)
+	reserved_date = UnixTimeStampField(use_numeric=True, default=date_now)
+	request_expiration = UnixTimeStampField(use_numeric=True, default=expiry)
 	status = models.CharField(max_length=10)
 
 	def __str__(self):
@@ -101,7 +125,7 @@ class Transaction(models.Model):
 	item = models.OneToOneField(Item)
 	seller = models.ForeignKey(UserProfile,related_name="transactions_as_owner")
 	buyer = models.ForeignKey(UserProfile,related_name="transactions_as_buyer")
-	date_claimed = models.DateTimeField()
+	date_claimed = UnixTimeStampField(use_numeric=True, default=0.0)
 
 	def __str__(self):
 		return str(self.id)
@@ -112,7 +136,15 @@ class Transaction(models.Model):
 
 class Notification(models.Model):
 	def expiry():
-		return (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d %H:%M:%S")
+		date = datetime.now() + timedelta(days=3)
+		unix =  mktime(date.timetuple())
+		return unix
+
+	def date_now():
+		date = datetime.now()
+		unix = mktime(date.timetuple())
+		return unix
+
 	notif_type = (
 		('sell','Sell'),
 		('buy','Buy'),
@@ -131,8 +163,8 @@ class Notification(models.Model):
 	notification_type = models.CharField(max_length=10)
 	#status = models.CharField(max_length=10, choices=status_type, default='unread')
 	status = models.CharField(max_length=10, default='unread')
-	notification_date = models.DateTimeField(auto_now_add=True)
-	notification_expiration = models.DateTimeField(default=expiry)
+	notification_date = UnixTimeStampField(use_numeric=True, default=date_now)
+	notification_expiration = UnixTimeStampField(use_numeric=True, default=expiry)
 
 
 	def __str__(self):

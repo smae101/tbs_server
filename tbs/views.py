@@ -614,6 +614,9 @@ class GetDonatedItemView(View):
 
 class AdminApproveItemView(View):
 	def post(self, request):
+		date = datetime.now()
+		unix = mktime(date.timetuple())
+
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		cat = request.POST.get('category',None)
@@ -631,7 +634,7 @@ class AdminApproveItemView(View):
 			item = Item.objects.get(id=item_id)
 			item.category = category
 			item.status = status
-			item.date_approved = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			item.date_approved = unix
 			item.save()
 
 			target = User.objects.get(username=item.owner.user.username)
@@ -726,6 +729,8 @@ class AddCategoryView(View):
 class ReservedItemAvailableView(View):
 	def post(self, request):
 		expiry = datetime.now() + timedelta(days=3)
+		unix =  mktime(expiry.timetuple())
+
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		status = 'Available'
@@ -753,7 +758,7 @@ class ReservedItemAvailableView(View):
 
 			request = ReservationRequest.objects.get(id=request_id)
 			request.status = status
-			request.request_expiration = expiry.strftime("%Y-%m-%d %H:%M:%S")
+			request.request_expiration = unix
 			request.save()
 
 			response = {
@@ -767,6 +772,9 @@ class ReservedItemAvailableView(View):
 
 class ReservedItemClaimedView(View):
 	def post(self, request):
+		date = datetime.now()
+		unix = mktime(date.timetuple())
+
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		status = 'Sold'
@@ -814,7 +822,7 @@ class ReservedItemClaimedView(View):
 			transaction.item = item
 			transaction.seller = owner
 			transaction.buyer = buyer
-			transaction.date_claimed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			transaction.date_claimed = unix
 			transaction.save()
 
 			request.delete()
@@ -830,6 +838,9 @@ class ReservedItemClaimedView(View):
 
 class AdminApproveDonationView(View):
 	def post(self, request):
+		date = datetime.now()
+		unix = mktime(date.timetuple())
+
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		stars = request.POST.get('stars_required',None)
@@ -844,7 +855,7 @@ class AdminApproveDonationView(View):
 		else:
 			item = Item.objects.get(id=item_id)
 			item.status = status
-			item.date_approved = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+			item.date_approved = unix
 			item.stars_required = stars
 			item.save()
 
