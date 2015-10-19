@@ -5,6 +5,7 @@ from tbs import models
 from rest_framework import serializers, viewsets
 
 from datetime import datetime, timedelta
+from time import mktime
 
 class StudentSerializer(serializers.ModelSerializer):
 
@@ -39,57 +40,111 @@ class CategorySerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
 	owner = UserProfileSerializer(many=False)
 	category = CategorySerializer(many=False)
+	date_approved =  serializers.SerializerMethodField
 
 	class Meta:
 		model = models.Item
 		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'picture', 'stars_required','stars_to_use', 'date_approved'
+
+	def get_date_approved(self, obj):
+		date = getattr(obj,'date_approved')
+		unix = mktime(date.timetuple())
+		return unix
 
 
 class NotificationSerializer(serializers.ModelSerializer):
 	target = UserSerializer(many=False)
 	maker = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
+	notification_date = serializers.SerializerMethodField
 
 	class Meta:
 		model = models.Notification
 		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date'
+
+	def get_notification_date(self, obj):
+		date = getattr(obj,'notification_date')
+		unix = mktime(date.timetuple())
+		return unix
 
 
 class TransactionSerializer(serializers.ModelSerializer):
 	item = ItemSerializer(many=False)
 	buyer = UserProfileSerializer(many=False)
 	seller = UserProfileSerializer(many=False)
+	date_claimed = serializers.SerializerMethodField
 
 	class Meta:
 		model = models.Transaction
 		fields = 'id','item', 'buyer', 'seller', 'date_claimed'
 
+	def get_request_date(self, obj):
+		date = getattr(obj,'date_claimed')
+		unix = mktime(date.timetuple())
+		return unix
+
 
 class SellApprovalSerializer(serializers.ModelSerializer):
 	seller = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
+	request_date = serializers.SerializerMethodField()
+	request_expiration = serializers.SerializerMethodField()
 
 	class Meta:
 		model = models.ApprovalSellRequest
 		fields = 'id','seller', 'item', 'request_date', 'request_expiration'
 
+	def get_request_date(self, obj):
+		date = getattr(obj,'request_date')
+		unix = mktime(date.timetuple())
+		return unix
+
+	def get_request_expiration(self, obj):
+		date = getattr(obj,'request_expiration')
+		unix = mktime(date.timetuple())
+		return unix
+
 
 class DonateApprovalSerializer(serializers.ModelSerializer):
 	donor = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
+	request_date = serializers.SerializerMethodField()
+	request_expiration = serializers.SerializerMethodField()
 
 	class Meta:
 		model = models.ApprovalDonateRequest
 		fields = 'id','donor', 'item', 'request_date', 'request_expiration'
 
+	def get_request_date(self, obj):
+		date = getattr(obj,'request_date')
+		unix = mktime(date.timetuple())
+		return unix
+
+	def get_request_expiration(self, obj):
+		date = getattr(obj,'request_expiration')
+		unix = mktime(date.timetuple())
+		return unix
+
 
 class ReservationSerializer(serializers.ModelSerializer):
 	buyer = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
+	reserved_date = serializers.SerializerMethodField()
+	request_expiration = serializers.SerializerMethodField()
 
 	class Meta:
 		model = models.ReservationRequest
 		fields = 'id','buyer', 'item', 'reserved_date', 'request_expiration', 'status'
+
+	def get_request_date(self, obj):
+		date = getattr(obj,'reserved_date')
+		unix = mktime(date.timetuple())
+		return unix
+
+	def get_request_expiration(self, obj):
+		date = getattr(obj,'request_expiration')
+		unix = mktime(date.timetuple())
+		return unix
 
 
 class UserNotificationViewSet(viewsets.ReadOnlyModelViewSet):
