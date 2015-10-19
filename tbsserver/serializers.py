@@ -56,14 +56,20 @@ class NotificationSerializer(serializers.ModelSerializer):
 	target = UserSerializer(many=False)
 	maker = UserSerializer(many=False)
 	item = ItemSerializer(many=False)
-	notification_date = serializers.SerializerMethodField
+	notification_date = serializers.SerializerMethodField()
+	notification_expiration = serializers.SerializerMethodField()
 
 	class Meta:
 		model = models.Notification
-		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date'
+		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date', 'notification_expiration'
 
 	def get_notification_date(self, obj):
 		date = getattr(obj,'notification_date')
+		unix = mktime(date.timetuple())
+		return unix
+
+	def get_notification_expiration(self, obj):
+		date = getattr(obj,'notification_expiration')
 		unix = mktime(date.timetuple())
 		return unix
 
