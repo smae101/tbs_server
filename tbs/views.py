@@ -741,8 +741,9 @@ class ReservedItemAvailableView(View):
 			return JsonResponse(response)
 		else:
 			item = Item.objects.get(id=item_id)
+			request = ReservationRequest.objects.get(id=request_id)
 
-			target = User.objects.get(username=item.owner.user.username)
+			target = User.objects.get(username=request.buyer.username)
 			maker = User.objects.get(username="admin")
 
 			notif = Notification()
@@ -754,7 +755,7 @@ class ReservedItemAvailableView(View):
 			notif.status = "unread"
 			notif.save()
 
-			request = ReservationRequest.objects.get(id=request_id)
+			
 			request.status = status
 			request.request_expiration = expiry
 			request.save()
