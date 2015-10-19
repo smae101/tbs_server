@@ -775,6 +775,7 @@ class ReservedItemClaimedView(View):
 
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
+		stars_required = request.POST.get('stars_required', None)
 		status = 'Sold'
 
 		if (item_id or request_id) is None:
@@ -806,7 +807,7 @@ class ReservedItemClaimedView(View):
 			if item.purpose == 'Sell':
 				stars_to_add = item.price/20
 			else:
-				stars_to_add = stars_required/2
+				stars_to_add = item.stars_required/2
 
 			buyer = UserProfile.objects.get(user=request.buyer)
 			buyer.stars_collected = buyer.stars_collected + stars_to_add
