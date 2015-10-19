@@ -148,7 +148,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 		model = models.ReservationRequest
 		fields = 'id','buyer', 'item', 'reserved_date', 'request_expiration', 'status'
 
-	def get_request_date(self, obj):
+	def get_reserved_date(self, obj):
 		date = getattr(obj,'reserved_date')
 		unix = mktime(date.timetuple())
 		return unix
