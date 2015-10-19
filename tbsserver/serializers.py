@@ -90,7 +90,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 		model = models.Transaction
 		fields = 'id','item', 'buyer', 'seller', 'date_claimed'
 
-	def get_request_date(self, obj):
+	def get_date_claimed(self, obj):
 		date = getattr(obj,'date_claimed')
 		unix = mktime(date.timetuple())
 		return unix
