@@ -40,7 +40,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class ItemSerializer(serializers.ModelSerializer):
 	owner = UserProfileSerializer(many=False)
 	category = CategorySerializer(many=False)
-	date_approved =  serializers.SerializerMethodField
+	date_approved =  serializers.SerializerMethodField()
 
 	class Meta:
 		model = models.Item
