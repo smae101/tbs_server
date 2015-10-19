@@ -48,8 +48,14 @@ class ItemSerializer(serializers.ModelSerializer):
 
 	def get_date_approved(self, obj):
 		date = getattr(obj,'date_approved')
-		unix = mktime(date.timetuple())
-		return unix
+		print(date)
+		if date:
+			print("not none")
+			unix = mktime(date.timetuple())
+			return unix
+		else:
+			print("none")
+			return date
 
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -78,7 +84,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 	item = ItemSerializer(many=False)
 	buyer = UserProfileSerializer(many=False)
 	seller = UserProfileSerializer(many=False)
-	date_claimed = serializers.SerializerMethodField
+	date_claimed = serializers.SerializerMethodField()
 
 	class Meta:
 		model = models.Transaction
