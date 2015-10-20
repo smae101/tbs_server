@@ -243,7 +243,7 @@ class ReservationViewSet(viewsets.ReadOnlyModelViewSet):
 		date_now = datetime.now()
 		username = self.request.query_params.get('username',None)
 
-		if request_id is not None:
+		if username is not None:
 			return models.ReservationRequest.objects.filter(request_expiration__gt = date_now, buyer__username__iexact = username)
 
 		return super(ReservationViewSet, self).get_queryset()
