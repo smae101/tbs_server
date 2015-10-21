@@ -394,7 +394,8 @@ class DonateItemView(View):
 				item.category = Category.objects.get(category_name="Others")
 				item.status = "Pending"
 				item.purpose = "Donate"
-				item.picture = picture
+				if picture is not None:
+					item.picture = picture
 				item.stars_required = 0
 
 				item.save()
