@@ -873,6 +873,7 @@ class AdminApproveDonationView(View):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		stars = request.POST.get('stars_required',None)
+		category = request.POST.get('category', None);
 		status = 'Available'
 
 		if (item_id or request_id or stars) is None:
@@ -895,6 +896,7 @@ class AdminApproveDonationView(View):
 				item.status = status
 				item.date_approved = datetime.now()
 				item.stars_required = stars
+				item.category = category
 				item.save()
 
 				target = User.objects.get(username=item.owner.user.username)
