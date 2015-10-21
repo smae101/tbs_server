@@ -286,6 +286,18 @@ class EditItemView(View):
 			item.stars_required = 0
 			item.save()
 
+			if item.purpose == "Sell":
+				request = ApprovalSellRequest.objects.get(item=item)
+				approval_request = ApprovalSellRequest()
+			elif item.purpose == "Donate":
+				request = ApprovalDonateRequest.objects.get(item=item)
+				approval_request = ApprovalDonateRequest()
+			request.delete()
+
+			approval_request.seller = user
+			approval_request.item = item
+			approval_request.save()
+
 			admin = User.objects.get(username="admin")
 			notif = Notification()
 			notif.target = admin
