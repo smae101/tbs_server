@@ -428,39 +428,45 @@ class BuyItemView(View):
 			user =  User.objects.get(username=buyer)
 			if user is not None:
 				item = Item.objects.get(id=item_id)
-				if stars_to_use is not None:
-					item.stars_to_use = stars_to_use
-				item.status = "Reserved"
-				item.save()
+				if item is not None:
+					if stars_to_use is not None:
+						item.stars_to_use = stars_to_use
+					item.status = "Reserved"
+					item.save()
 
-				reservation_request = ReservationRequest()
-				reservation_request.buyer = user
-				reservation_request.item = item
-				reservation_request.status = "Reserved"
-				reservation_request.save()
+					reservation_request = ReservationRequest()
+					reservation_request.buyer = user
+					reservation_request.item = item
+					reservation_request.status = "Reserved"
+					reservation_request.save()
 
-				notif_admin = Notification()
-				notif_admin.target = User.objects.get(username="admin")
-				notif_admin.maker = user
-				notif_admin.item = item
-				notif_admin.message = "Buy " + item.name + "(" + notif_admin.target.username + ")"
-				notif_admin.notification_type = "buy"
-				notif_admin.status = "unread"
-				notif_admin.save()
+					notif_admin = Notification()
+					notif_admin.target = User.objects.get(username="admin")
+					notif_admin.maker = user
+					notif_admin.item = item
+					notif_admin.message = "Buy " + item.name + "(" + notif_admin.target.username + ")"
+					notif_admin.notification_type = "buy"
+					notif_admin.status = "unread"
+					notif_admin.save()
 
-				notif_seller = Notification()
-				notif_seller.target = User.objects.get(username=item.owner.user.username)
-				notif_seller.maker = user
-				notif_seller.item = item
-				notif_seller.message = "Buy " + item.name + "(" + notif_seller.target.username + ")"
-				notif_seller.notification_type = "buy"
-				notif_seller.status = "unread"
-				notif_seller.save()
+					notif_seller = Notification()
+					notif_seller.target = User.objects.get(username=item.owner.user.username)
+					notif_seller.maker = user
+					notif_seller.item = item
+					notif_seller.message = "Buy " + item.name + "(" + notif_seller.target.username + ")"
+					notif_seller.notification_type = "buy"
+					notif_seller.status = "unread"
+					notif_seller.save()
 
-				response = {
-					'status': 201,
-					'statusText': 'Item updated',
-				}
+					response = {
+						'status': 201,
+						'statusText': 'Item updated',
+					}
+				else:
+					response = {
+						'status': 404,
+						'statusText': 'Item does not exist',
+					}
 			else:
 				response = {
 					'status': 404,
