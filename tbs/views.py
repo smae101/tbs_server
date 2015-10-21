@@ -217,7 +217,8 @@ class SellItemView(View):
 				item.status = "Pending"
 				item.purpose = "Sell"
 				item.price = price
-				item.picture = picture
+				if picture is not None:
+					item.picture = picture
 				item.stars_required = 0
 
 				item.save()
