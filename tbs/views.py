@@ -194,7 +194,7 @@ class SellItemView(View):
 		price = request.POST.get('price',None)
 		picture = request.POST.get('url', None)
 
-		if owner and name and description and price:
+		if owner and name and description and price and picture:
 			user = User.objects.get(username=owner)
 			print (owner)
 			print (user)
@@ -758,30 +758,36 @@ class ReservedItemAvailableView(View):
 			}
 			return JsonResponse(response)
 		else:
-			item = Item.objects.get(id=item_id)
+			item = Item.objects.get(id=item_id, status="Reserved")
 			request = ReservationRequest.objects.get(id=request_id)
 
-			target = User.objects.get(username=request.buyer.username)
-			maker = User.objects.get(username="admin")
+			if(item or request) is None:
+				response = {
+					'status': 404,
+					'statusText': 'Item not available',
+				}
+				return JsonResponse(response)
+			else:
+				target = User.objects.get(username=request.buyer.username)
+				maker = User.objects.get(username="admin")
 
-			notif = Notification()
-			notif.target = target
-			notif.maker = maker
-			notif.item = item
-			notif.message = "This item is now available: " + item.name
-			notif.notification_type = "Available"
-			notif.status = "unread"
-			notif.save()
+				notif = Notification()
+				notif.target = target
+				notif.maker = maker
+				notif.item = item
+				notif.message = "This item is now available: " + item.name
+				notif.notification_type = "Available"
+				notif.status = "unread"
+				notif.save()
 
-			
-			request.status = status
-			request.request_expiration = expiry
-			request.save()
+				request.status = status
+				request.request_expiration = expiry
+				request.save()
 
-			response = {
-				'status': 200,
-				'statusText': 'Item set available successful',}
-			return JsonResponse(response)
+				response = {
+					'status': 200,
+					'statusText': 'Item set available successful',}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'itemAvailable.html')
@@ -804,50 +810,57 @@ class ReservedItemClaimedView(View):
 			return JsonResponse(response)
 		else:
 			request = ReservationRequest.objects.get(id=request_id)
+			item = Item.objects.get(id=item_id, status="Reserved")
 
-			item = Item.objects.get(id=item_id)
-			item.status = status
-			item.save()
-
-			target = User.objects.get(username=item.owner.user.username)
-			maker = User.objects.get(username="admin")
-
-			notif = Notification()
-			notif.target = target
-			notif.maker = maker
-			notif.item = item
-			notif.message = "This item is now sold: " + item.name
-			notif.notification_type = "sold"
-			notif.status = "unread"
-			notif.save()
-
-			stars_to_add = 0
-			if item.purpose == 'Sell':
-				stars_to_add = item.price/20
+			if(item or request) is None:
+				response = {
+					'status': 404,
+					'statusText': 'Item not available',
+				}
+				return JsonResponse(response)
 			else:
-				stars_to_add = item.stars_required/2
+				item.status = status
+				item.save()
 
-			buyer = UserProfile.objects.get(user=request.buyer)
-			buyer.stars_collected = buyer.stars_collected + stars_to_add
-			buyer.save()
+				target = User.objects.get(username=item.owner.user.username)
+				maker = User.objects.get(username="admin")
 
-			owner = UserProfile.objects.get(user=target)
-			owner.stars_collected = owner.stars_collected + stars_to_add
-			owner.save()
+				notif = Notification()
+				notif.target = target
+				notif.maker = maker
+				notif.item = item
+				notif.message = "This item is now sold: " + item.name
+				notif.notification_type = "sold"
+				notif.status = "unread"
+				notif.save()
 
-			transaction = Transaction()
-			transaction.item = item
-			transaction.seller = owner
-			transaction.buyer = buyer
-			transaction.date_claimed = datetime.now()
-			transaction.save()
+				stars_to_add = 0
+				if item.purpose == 'Sell':
+					stars_to_add = item.price/20
+				else:
+					stars_to_add = item.stars_required/2
 
-			request.delete()
+				buyer = UserProfile.objects.get(user=request.buyer)
+				buyer.stars_collected = buyer.stars_collected + stars_to_add
+				buyer.save()
 
-			response = {
-				'status': 200,
-				'statusText': 'Item successfully claimed',}
-			return JsonResponse(response)
+				owner = UserProfile.objects.get(user=target)
+				owner.stars_collected = owner.stars_collected + stars_to_add
+				owner.save()
+
+				transaction = Transaction()
+				transaction.item = item
+				transaction.seller = owner
+				transaction.buyer = buyer
+				transaction.date_claimed = datetime.now()
+				transaction.save()
+
+				request.delete()
+
+				response = {
+					'status': 200,
+					'statusText': 'Item successfully claimed',}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'itemClaimed.html')
@@ -869,31 +882,40 @@ class AdminApproveDonationView(View):
 			}
 			return JsonResponse(response)
 		else:
-			item = Item.objects.get(id=item_id)
-			item.status = status
-			item.date_approved = datetime.now()
-			item.stars_required = stars
-			item.save()
-
-			target = User.objects.get(username=item.owner.user.username)
-			maker = User.objects.get(username="admin")
-
-			notif = Notification()
-			notif.target = target
-			notif.maker = maker
-			notif.item = item
-			notif.message = "Approve Donated item: " + item.name
-			notif.notification_type = "approve"
-			notif.status = "unread"
-			notif.save()
-
+			item = Item.objects.get(id=item_id, status="Pending")
 			request = ApprovalDonateRequest.objects.get(id=request_id)
-			request.delete()
 
-			response = {
-				'status': 200,
-				'statusText': 'Donated item approval successful',}
-			return JsonResponse(response)
+			if(item or request) is None:
+				response = {
+					'status': 404,
+					'statusText': 'Item not available',
+				}
+				return JsonResponse(response)
+			else:
+				item.status = status
+				item.date_approved = datetime.now()
+				item.stars_required = stars
+				item.save()
+
+				target = User.objects.get(username=item.owner.user.username)
+				maker = User.objects.get(username="admin")
+
+				notif = Notification()
+				notif.target = target
+				notif.maker = maker
+				notif.item = item
+				notif.message = "Approve Donated item: " + item.name
+				notif.notification_type = "approve"
+				notif.status = "unread"
+				notif.save()
+
+				
+				request.delete()
+
+				response = {
+					'status': 200,
+					'statusText': 'Donated item approval successful',}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'approveDonation.html')
@@ -912,29 +934,37 @@ class AdminDisapproveDonationView(View):
 			}
 			return JsonResponse(response)
 		else:
-			item = Item.objects.get(id=item_id)
-			item.status = status
-			item.save()
-
-			target = User.objects.get(username=item.owner.user.username)
-			maker = User.objects.get(username="admin")
-
-			notif = Notification()
-			notif.target = target
-			notif.maker = maker
-			notif.item = item
-			notif.message = "Disapprove donated item: " + item.name
-			notif.notification_type = "disapprove"
-			notif.status = "unread"
-			notif.save()
-
+			item = Item.objects.get(id=item_id, status="Pending")
 			request = ApprovalDonateRequest.objects.get(id=request_id)
-			request.delete()
 
-			response = {
-				'status': 200,
-				'statusText': 'Donated item disapproval successful',}
-			return JsonResponse(response)
+			if(item or request) is None:
+				response = {
+					'status': 404,
+					'statusText': 'Item not available',
+				}
+				return JsonResponse(response)
+			else:
+				item.status = status
+				item.save()
+
+				target = User.objects.get(username=item.owner.user.username)
+				maker = User.objects.get(username="admin")
+
+				notif = Notification()
+				notif.target = target
+				notif.maker = maker
+				notif.item = item
+				notif.message = "Disapprove donated item: " + item.name
+				notif.notification_type = "disapprove"
+				notif.status = "unread"
+				notif.save()
+
+				request.delete()
+
+				response = {
+					'status': 200,
+					'statusText': 'Donated item disapproval successful',}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'disapproveItem.html')
