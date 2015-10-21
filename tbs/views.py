@@ -891,7 +891,7 @@ class AdminApproveDonationView(View):
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
 		stars = request.POST.get('stars_required',None)
-		category = request.POST.get('activity_category', None);
+		cat = request.POST.get('activity_category', None);
 		status = 'Available'
 
 		if (item_id or request_id or stars) is None:
@@ -911,6 +911,7 @@ class AdminApproveDonationView(View):
 				}
 				return JsonResponse(response)
 			else:
+				category = Category.objects.get(category_name=cat)
 				item.status = status
 				item.date_approved = datetime.now()
 				item.stars_required = stars
