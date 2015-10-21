@@ -257,7 +257,7 @@ class ItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Sell").exclude(status="sold" and "Pending")
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Sell").exclude(status="Sold" and "Pending")
 
 		return super(ItemsToSellViewSet, self).get_queryset()
 
