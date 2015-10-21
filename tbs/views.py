@@ -170,7 +170,7 @@ class ChangePasswordView(View):
 			else:
 				response = {
 					'status': 404,
-					'statusText': 'User does not exist',
+					'statusText': 'Invalid username or password',
 				}
 			
 			return JsonResponse(response)
