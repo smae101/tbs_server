@@ -289,14 +289,16 @@ class EditItemView(View):
 			item.save()
 
 			if item.purpose == "Sell":
-				request = ApprovalSellRequest.objects.get(item=item)
+				sell_request = ApprovalSellRequest.objects.get(item=item)
+				sell_request.delete()
 				approval_request = ApprovalSellRequest()
+				approval_request.seller = user
 			elif item.purpose == "Donate":
-				request = ApprovalDonateRequest.objects.get(item=item)
+				donate_request = ApprovalDonateRequest.objects.get(item=item)
+				donate_request.delete()
 				approval_request = ApprovalDonateRequest()
-			request.delete()
+				approval_request.donor = user
 
-			approval_request.seller = user
 			approval_request.item = item
 			approval_request.save()
 
