@@ -450,13 +450,11 @@ class BuyItemView(View):
 				if item is not None:
 					if stars_to_use is not None:
 						item.stars_to_use = stars_to_use
-					item.status = "Reserved"
-					item.save()
-
-					buyerProfile = UserProfile.objects.get(user=user)
-					if item.stars_to_use != 0:
+						buyerProfile = UserProfile.objects.get(user=user)
 						buyerProfile.stars_collected = buyerProfile.stars_collected - item.stars_to_use
 						buyerProfile.save()
+					item.status = "Reserved"
+					item.save()
 
 					reservation_request = ReservationRequest()
 					reservation_request.buyer = user
@@ -528,7 +526,7 @@ class CancelReservedItemView(View):
 				elif item.stars_required != 0:
 					buyerProfile.stars_collected = buyerProfile.stars_collected + item.stars_required
 					buyerProfile.save()
-					
+
 				item.stars_to_use = 0
 				item.status = "Available"
 				item.save()
