@@ -453,6 +453,11 @@ class BuyItemView(View):
 					item.status = "Reserved"
 					item.save()
 
+					buyerProfile = UserProfile.objects.get(user=user)
+					if item.stars_to_use != 0:
+						buyerProfile.stars_collected = buyerProfile.stars_collected - item.stars_to_use
+						buyerProfile.save()
+
 					reservation_request = ReservationRequest()
 					reservation_request.buyer = user
 					reservation_request.item = item
@@ -516,9 +521,14 @@ class CancelReservedItemView(View):
 			if user is not None:
 				item = Item.objects.get(id=item_id)
 				buyerProfile = UserProfile.objects.get(user=user)
+
 				if item.stars_to_use != 0:
 					buyerProfile.stars_collected = buyerProfile.stars_collected + item.stars_to_use
 					buyerProfile.save()
+				elif item.stars_required != 0:
+					buyerProfile.stars_collected = buyerProfile.stars_collected + item.stars_required
+					buyerProfile.save()
+					
 				item.stars_to_use = 0
 				item.status = "Available"
 				item.save()
@@ -581,6 +591,9 @@ class GetDonatedItemView(View):
 				if donee.stars_collected >= item.stars_required:
 					item.status = "Reserved"
 					item.save()
+					
+					donee.stars_collected = donee.stars_collected - item.stars_required
+					donee.save()
 
 					reservation_request = ReservationRequest()
 					reservation_request.buyer = user
