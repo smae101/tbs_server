@@ -582,9 +582,6 @@ class GetDonatedItemView(View):
 					item.status = "Reserved"
 					item.save()
 
-					donee.stars_collected = donee.stars_collected - item.stars_required
-					donee.save()
-
 					reservation_request = ReservationRequest()
 					reservation_request.buyer = user
 					reservation_request.item = item
@@ -860,6 +857,7 @@ class ReservedItemClaimedView(View):
 				notif.status = "unread"
 				notif.save()
 
+				buyer = UserProfile.objects.get(user=request.buyer)
 				stars_to_add = 0
 				if item.purpose == 'Sell':
 					if item.stars_to_use != 0:
@@ -867,11 +865,12 @@ class ReservedItemClaimedView(View):
 						stars_to_add = (item.price*(1-discount))/20
 					else:
 						stars_to_add = item.price/20
+					buyer.stars_collected = buyer.stars_collected + stars_to_add - item.stars_to_use
 				else:
 					stars_to_add = item.stars_required/2
-
-				buyer = UserProfile.objects.get(user=request.buyer)
-				buyer.stars_collected = buyer.stars_collected + stars_to_add - item.stars_to_use
+					buyer.stars_collected = buyer.stars_collected + stars_to_add
+				
+				
 				buyer.save()
 
 				owner = UserProfile.objects.get(user=target)
