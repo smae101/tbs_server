@@ -283,7 +283,8 @@ class EditItemView(View):
 				item.price = price
 			elif item.purpose == "Donate":
 				item.price = 0;
-			item.picture = picture
+			if picture is not None:
+				item.picture = picture
 			item.stars_required = 0
 			item.save()
 
