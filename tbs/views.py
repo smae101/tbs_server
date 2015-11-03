@@ -449,7 +449,7 @@ class BuyItemView(View):
 				item = Item.objects.get(id=item_id)
 				if item is not None:
 					if stars_to_use is not None:
-						item.stars_to_use = stars_to_use
+						item.stars_to_use = int(stars_to_use)
 					item.status = "Reserved"
 					item.save()
 
