@@ -220,6 +220,7 @@ class SellItemView(View):
 				if picture is not None:
 					item.picture = picture
 				item.stars_required = 0
+				item.stars_to_use = 0
 
 				item.save()
 
@@ -400,6 +401,7 @@ class DonateItemView(View):
 				if picture is not None:
 					item.picture = picture
 				item.stars_required = 0
+				item.stars_to_use = 0
 
 				item.save()
 
@@ -517,7 +519,7 @@ class CancelReservedItemView(View):
 				if item.stars_to_use != 0:
 					buyerProfile.stars_collected = buyerProfile.stars_collected + item.stars_to_use
 					buyerProfile.save()
-					item.stars_to_use = 0
+				item.stars_to_use = 0
 				item.status = "Available"
 				item.save()
 
@@ -845,6 +847,7 @@ class ReservedItemClaimedView(View):
 				item.status = status
 				item.save()
 
+
 				target = User.objects.get(username=item.owner.user.username)
 				maker = User.objects.get(username="admin")
 
@@ -864,7 +867,7 @@ class ReservedItemClaimedView(View):
 					stars_to_add = item.stars_required/2
 
 				buyer = UserProfile.objects.get(user=request.buyer)
-				buyer.stars_collected = buyer.stars_collected + stars_to_add
+				buyer.stars_collected = buyer.stars_collected + stars_to_add - item.stars_to_use
 				buyer.save()
 
 				owner = UserProfile.objects.get(user=target)
