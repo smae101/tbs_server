@@ -862,7 +862,11 @@ class ReservedItemClaimedView(View):
 
 				stars_to_add = 0
 				if item.purpose == 'Sell':
-					stars_to_add = item.price/20
+					if item.stars_to_use != 0:
+						discount = item.stars_to_use/1000
+						stars_to_add = (item.price*(1-discount))/20
+					else:
+						stars_to_add = item.price/20
 				else:
 					stars_to_add = item.stars_required/2
 
