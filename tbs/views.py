@@ -878,12 +878,10 @@ class ReservedItemClaimedView(View):
 					else:
 						discount = item.stars_to_use/1000
 						stars_to_add = (item.price*(1-discount))/20
-					buyer.stars_collected = buyer.stars_collected + stars_to_add - item.stars_to_use
 				else:
 					stars_to_add = item.stars_required/2
-					buyer.stars_collected = buyer.stars_collected + stars_to_add
 				
-				
+				buyer.stars_collected = buyer.stars_collected + stars_to_add
 				buyer.save()
 
 				owner = UserProfile.objects.get(user=target)
