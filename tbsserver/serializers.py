@@ -199,7 +199,7 @@ class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TransactionViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.Transaction.objects.all().order_by('id')
+	queryset = models.Transaction.objects.all().order_by('-id')
 	serializer_class = TransactionSerializer
 
 
