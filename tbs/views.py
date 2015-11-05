@@ -765,14 +765,24 @@ class AddCategoryView(View):
 			}
 			return JsonResponse(response)
 		else:
-			category = Category()
-			category.category_name = cat
-			category.save()
+			try:
+				categ = Category.objects.get(category_name__iexact=cat)
+				if categ is not None:
+					response = {
+						'status': 403,
+						'statusText': 'Category already exists',
+					}
+					return JsonResponse(response)
 
-			response = {
-				'status': 200,
-				'statusText': 'New category added',}
-			return JsonResponse(response)
+			except Category.DoesNotExist:
+				category = Category()
+				category.category_name = cat
+				category.save()
+
+				response = {
+					'status': 200,
+					'statusText': 'New category added',}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'addCategory.html')
