@@ -3,12 +3,14 @@
 	<title>ChangePassword</title>
 </head>
 <body>
-	<form action="/api/change_password" method="post">
-		Username: <input type="text" name="username"><br><br>
+	<form action="/api/edit_profile" method="post">
+		UserName: <input type="text" name="username"><br><br>
+		New Username: <input type="text" name="new_username"><br><br>
 		Old Password: <input type="text" name="old_password"><br><br>
 		New Password: <input type="text" name="new_password"><br><br>
 		Confirm New Password: <input type="text" name="confirm_password"><br><br>
-		<input type="submit" value="Change Password">
+		Picture: <input type="text" name="picture"><br><br>
+		<input type="submit" value="Save">
 	</form>
 </body>
 </html>

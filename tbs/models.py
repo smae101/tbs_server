@@ -16,6 +16,7 @@ class UserProfile(models.Model):
 	user = models.OneToOneField(User)
 	student = models.OneToOneField(Student)
 	stars_collected = models.IntegerField(default=0)
+	picture = models.URLField(blank=True, null=True)
 
 	def __str__(self):
 		return self.user.first_name + ' ' + self.user.last_name
@@ -48,6 +49,7 @@ class Item(models.Model):
 	#purpose = models.CharField(max_length=10, choices=purpose_type)
 	purpose = models.CharField(max_length=10)
 	price = models.FloatField(default=0)
+	quantity = models.IntegerField(default=0)
 	stars_to_use = models.IntegerField(default=0)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
@@ -85,8 +87,11 @@ class ApprovalDonateRequest(models.Model):
 class ReservationRequest(models.Model):
 	def expiry():
 		return datetime.now() + timedelta(days=3)
+
 	buyer = models.ForeignKey(User)
-	item = models.OneToOneField(Item)
+	item = models.ForeignKey(Item)
+	quantity = models.IntegerField(default=0)
+	item_code = models.CharField(max_length=100, blank=True, null=True)
 	reserved_date = models.DateTimeField(auto_now_add=True)
 	request_expiration = models.DateTimeField(default=expiry)
 	status = models.CharField(max_length=10)
@@ -95,8 +100,25 @@ class ReservationRequest(models.Model):
 		return self.item.name
 
 
+class RentedItems(models.Model):
+	def expiry():
+		return datetime.now() + timedelta(days=3)
+		
+	renter = models.ForeignKey(User)
+	item = models.ForeignKey(Item)
+	quantity = models.IntegerField(default=0)
+	item_code = models.CharField(max_length=100, blank=True, null=True)
+	reserved_date = models.DateTimeField(auto_now_add=True)
+	request_expiration = models.DateTimeField(default=expiry)
+	penalty = models.CharField(max_length=10)
+
+	def __str__(self):
+		return self.item.name
+
+
 class Transaction(models.Model):
 	item = models.OneToOneField(Item)
+	item_code = models.CharField(max_length=100, blank=True, null=True)
 	seller = models.ForeignKey(UserProfile,related_name="transactions_as_owner")
 	buyer = models.ForeignKey(UserProfile,related_name="transactions_as_buyer")
 	date_claimed = models.DateTimeField()
@@ -124,6 +146,7 @@ class Notification(models.Model):
 	target = models.ForeignKey(User, related_name='target')#this is for the receiver of the notification
 	maker = models.ForeignKey(User, default='admin') #this is for the maker of the notification or who made the action
 	item = models.ForeignKey(Item)
+	item_code = models.CharField(max_length=100)
 	message = models.CharField(max_length=500)
 	#notification_type = models.CharField(max_length=10, choices=notif_type)
 	notification_type = models.CharField(max_length=10)

@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = User
-		fields = 'username', 'is_staff'
+		fields = 'id', 'username', 'is_staff'
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -27,7 +27,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.UserProfile
-		fields = 'user', 'student', 'stars_collected'
+		fields = 'user', 'student', 'stars_collected', 'picture'
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -44,7 +44,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Item
-		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'picture', 'stars_required','stars_to_use', 'date_approved'
+		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'quantity', 'picture', 'stars_required','stars_to_use', 'date_approved'
 
 	def get_date_approved(self, obj):
 		date = getattr(obj,'date_approved')
@@ -177,12 +177,13 @@ class AdminNotificationViewSet(viewsets.ReadOnlyModelViewSet):
 	serializer_class = NotificationSerializer
 
 	def get_queryset(self):
-		username = self.request.query_params.get('username', None)
+		#username = self.request.query_params.get('username', None)
 
-		if username is not None:
-			return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True).order_by('-notification_date')
+		#if username is not None:
+			#return models.Notification.objects.filter(target__username__iexact=username,target__is_staff=True).order_by('-notification_date')
 
-		return super(AdminNotificationViewSet, self).get_queryset()
+		#return super(AdminNotificationViewSet, self).get_queryset()
+		return models.Notification.objects.filter(target__is_staff=True).order_by('-notification_date')
 
 
 class UserProfileViewSet(viewsets.ReadOnlyModelViewSet):
@@ -314,9 +315,36 @@ class AllDonationsViewSet(viewsets.ReadOnlyModelViewSet):
 		return super(AllDonationsViewSet, self).get_queryset()
 
 
+#User: For Rent Items per user
+class ItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Rent").exclude(status="sold" and "Pending")
+
+		return super(ItemsToDonateViewSet, self).get_queryset()
+
+#User: Rent Items
+class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.Item.objects.filter(status="Available", purpose="Rent").exclude(owner__user__username__iexact = username)
+
+		return super(AllDonationsViewSet, self).get_queryset()
+
+
 class ListCategoriesViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = models.Category.objects.all()
 	serializer_class = CategorySerializer
 
 	def get_queryset(self):
-		return models.Category.objects.order_by('category_name')
+		return models.Category.objects.exclude(category_name="Uncategorized").order_by('category_name')
