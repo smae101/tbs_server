@@ -110,7 +110,7 @@ class RentedItem(models.Model):
 	item_code = models.CharField(max_length=100, blank=True, null=True)
 	rent_date = models.DateTimeField(auto_now_add=True)
 	rent_expiration = models.DateTimeField(default=expiry)
-	penalty = models.CharField(max_length=10)
+	penalty = models.FloatField(default=0)
 
 	def __str__(self):
 		return self.item.name
