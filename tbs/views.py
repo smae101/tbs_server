@@ -1388,7 +1388,7 @@ class ReturnRentedItemView(View):
 				return JsonResponse(response)
 
 	def get(self, request):
-		return render(request, 'itemClaimed.html')
+		return render(request, 'itemReturned.html')
 
 
 class NotifyRenterView(View):
