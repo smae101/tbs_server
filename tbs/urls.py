@@ -25,4 +25,6 @@ urlpatterns = [
 	url(r'^admin_disapproveDonation$', views.AdminDisapproveDonationView.as_view(), name='admin_disapproveDonation'),
 	url(r'^read_notification$', views.ReadNotificationView.as_view(), name='read_notification'),
 	url(r'^set_stars_collected$', views.SetStarsCollectedView.as_view(), name='set_stars_collected'),
+	url(r'^return_rented$', views.ReturnRentedItemView.as_view(), name='return_rented'),
+	url(r'^notify_renter$', views.NotifyRenterView.as_view(), name='notify_renter'),
 ]
