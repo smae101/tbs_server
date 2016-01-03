@@ -100,7 +100,7 @@ class ReservationRequest(models.Model):
 		return self.item.name
 
 
-class RentedItems(models.Model):
+class RentedItem(models.Model):
 	def expiry():
 		return datetime.now() + timedelta(days=3)
 		
@@ -108,8 +108,8 @@ class RentedItems(models.Model):
 	item = models.ForeignKey(Item)
 	quantity = models.IntegerField(default=0)
 	item_code = models.CharField(max_length=100, blank=True, null=True)
-	reserved_date = models.DateTimeField(auto_now_add=True)
-	request_expiration = models.DateTimeField(default=expiry)
+	rent_date = models.DateTimeField(auto_now_add=True)
+	rent_expiration = models.DateTimeField(default=expiry)
 	penalty = models.CharField(max_length=10)
 
 	def __str__(self):
