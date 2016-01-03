@@ -326,7 +326,7 @@ class ItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 		if username is not None:
 			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Rent").exclude(status="sold" and "Pending")
 
-		return super(ItemsToDonateViewSet, self).get_queryset()
+		return super(ItemsForRentViewSet, self).get_queryset()
 
 #User: Rent Items
 class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
@@ -339,7 +339,7 @@ class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 		if username is not None:
 			return models.Item.objects.filter(status="Available", purpose="Rent").exclude(owner__user__username__iexact = username)
 
-		return super(AllDonationsViewSet, self).get_queryset()
+		return super(AllItemsForRentViewSet, self).get_queryset()
 
 
 class ListCategoriesViewSet(viewsets.ReadOnlyModelViewSet):
