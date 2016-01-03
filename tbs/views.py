@@ -377,7 +377,7 @@ class ForRentItemView(View):
 				notif.maker = user
 				notif.item = item
 				notif.item_code = ""
-				notif.message = user.username + " wants his " + item.name + " to be rented"
+				notif.message = user.username + " wants his/her " + item.name + " to be rented"
 				notif.notification_type = "rent"
 				notif.status = "unread"
 				notif.save()

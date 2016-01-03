@@ -146,7 +146,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.ReservationRequest
-		fields = 'id','buyer', 'item', 'reserved_date', 'request_expiration', 'status'
+		fields = 'id','buyer', 'item', 'quantity', 'item_code', 'reserved_date', 'request_expiration', 'status'
 
 	def get_reserved_date(self, obj):
 		date = getattr(obj,'reserved_date')
@@ -155,6 +155,27 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 	def get_request_expiration(self, obj):
 		date = getattr(obj,'request_expiration')
+		unix = mktime(date.timetuple())
+		return unix
+
+
+class RentedItemSerializer(serializers.ModelSerializer):
+	renter = UserSerializer(many=False)
+	item = ItemSerializer(many=False)
+	rent_date = serializers.SerializerMethodField()
+	rent_expiration = serializers.SerializerMethodField()
+
+	class Meta:
+		model = models.ReservationRequest
+		fields = 'id','buyer', 'item', 'quantity', 'item_code', 'reserved_date', 'request_expiration', 'pending'
+
+	def get_reserved_date(self, obj):
+		date = getattr(obj,'rent_date')
+		unix = mktime(date.timetuple())
+		return unix
+
+	def get_request_expiration(self, obj):
+		date = getattr(obj,'rent_expiration')
 		unix = mktime(date.timetuple())
 		return unix
 
@@ -340,6 +361,20 @@ class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 			return models.Item.objects.filter(status="Available", purpose="Rent").exclude(owner__user__username__iexact = username)
 
 		return super(AllItemsForRentViewSet, self).get_queryset()
+
+
+#User: Rented Items
+class RentedItemsViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.RentedItem.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.RentedItem.objects.filter(renter__user__username__iexact = username)
+
+		return super(RentedItemsViewSet, self).get_queryset()
 
 
 class ListCategoriesViewSet(viewsets.ReadOnlyModelViewSet):
