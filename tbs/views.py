@@ -1344,6 +1344,7 @@ class ReturnRentedItemView(View):
 		else:
 			request = RentedItem.objects.get(id=rent_id)
 			item = Item.objects.get(id=item_id)
+			renter = UserProfile.get(user=request.renter)
 
 			if(item or request) is None:
 				response = {
@@ -1374,7 +1375,7 @@ class ReturnRentedItemView(View):
 				transaction.item = item
 				transaction.item_code = request.item_code
 				transaction.seller = item.owner
-				transaction.buyer = request.renter
+				transaction.buyer = renter
 				transaction.date_claimed = datetime.now()
 				transaction.save()
 
