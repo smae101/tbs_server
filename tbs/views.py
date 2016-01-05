@@ -503,7 +503,7 @@ class EditItemView(View):
 			item.stars_required = 0
 			item.save()
 
-			if item.purpose == "Sell":
+			if item.purpose == "Sell" or item.purpose == "Rent":
 				sell_request = ApprovalSellRequest.objects.get(item=item)
 				sell_request.delete()
 				approval_request = ApprovalSellRequest()
@@ -1196,7 +1196,7 @@ class ReservedItemClaimedView(View):
 					rentedItem.rent_expiration = expiry
 					rentedItem.penalty = 0
 					rentedItem.save()
-
+					
 				transaction = Transaction()
 				transaction.item = item
 				transaction.seller = owner
