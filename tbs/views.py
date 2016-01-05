@@ -10,7 +10,7 @@ from django.views.generic import View
 
 from rest_framework.parsers import JSONParser
 
-from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest
+from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest, RentedItem
 
 from datetime import datetime
 
