@@ -1188,7 +1188,7 @@ class ReservedItemClaimedView(View):
 
 				if item.purpose == 'Rent':
 					rentedItem =  RentedItem()
-					rentedItem.renter = buyer
+					rentedItem.renter = buyer.user
 					rentedItem.item = item
 					rentedItem.quantity = request.quantity
 					rentedItem.item_code = request.item_code
