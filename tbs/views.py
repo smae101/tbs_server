@@ -1186,7 +1186,7 @@ class ReservedItemClaimedView(View):
 				owner.stars_collected = owner.stars_collected + stars_to_add
 				owner.save()
 
-				if(item.purpose == 'Rent'):
+				if item.purpose == 'Rent':
 					rentedItem =  RentedItem()
 					rentedItem.renter = buyer
 					rentedItem.item = item
@@ -1202,6 +1202,7 @@ class ReservedItemClaimedView(View):
 				transaction.seller = owner
 				transaction.buyer = buyer
 				transaction.date_claimed = datetime.now()
+				transaction.item_code = request.item_code
 				transaction.save()
 
 				request.delete()
