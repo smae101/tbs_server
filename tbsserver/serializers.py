@@ -167,14 +167,14 @@ class RentedItemSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.RentedItem
-		fields = 'id', 'renter', 'item', 'quantity', 'item_code', 'rent_date', 'rent_expiration', 'penalty'
+		fields = 'id','renter', 'item', 'quantity', 'item_code', 'rent_date', 'rent_expiration', 'penalty'
 
-	def get_reserved_date(self, obj):
+	def get_rent_date(self, obj):
 		date = getattr(obj,'rent_date')
 		unix = mktime(date.timetuple())
 		return unix
 
-	def get_request_expiration(self, obj):
+	def get_rent_expiration(self, obj):
 		date = getattr(obj,'rent_expiration')
 		unix = mktime(date.timetuple())
 		return unix
@@ -366,7 +366,7 @@ class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 #User: Rented Items
 class RentedItemsViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = models.RentedItem.objects.all()
-	serializer_class = ItemSerializer
+	serializer_class = RentedItemSerializer
 
 	def get_queryset(self):
 		username = self.request.query_params.get('username', None)
