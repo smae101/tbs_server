@@ -1372,6 +1372,7 @@ class ReturnRentedItemView(View):
 
 				transaction = Transaction()
 				transaction.item = item
+				transaction.item_code = request.item_code
 				transaction.seller = item.owner
 				transaction.buyer = request.renter
 				transaction.date_claimed = datetime.now()
