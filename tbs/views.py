@@ -1344,7 +1344,7 @@ class ReturnRentedItemView(View):
 		else:
 			request = RentedItem.objects.get(id=rent_id)
 			item = Item.objects.get(id=item_id)
-			renter = UserProfile.get(user=request.renter)
+			renter = UserProfile.objects.get(user=request.renter)
 
 			if(item or request) is None:
 				response = {
