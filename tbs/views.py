@@ -378,7 +378,7 @@ class ForRentItemView(View):
 				notif.item = item
 				notif.item_code = ""
 				notif.message = user.username + " wants his/her " + item.name + " to be rented"
-				notif.notification_type = "rent"
+				notif.notification_type = "for rent"
 				notif.status = "unread"
 				notif.save()
 
@@ -1127,6 +1127,7 @@ class ReservedItemAvailableView(View):
 class ReservedItemClaimedView(View):
 	def post(self, request):
 		date = datetime.now()
+		expiry = datetime.now() + timedelta(days=3)
 
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
@@ -1184,6 +1185,17 @@ class ReservedItemClaimedView(View):
 				owner = UserProfile.objects.get(user=target)
 				owner.stars_collected = owner.stars_collected + stars_to_add
 				owner.save()
+
+				if(item.purpose == 'Rent'):
+					rentedItem =  RentedItem()
+					rentedItem.renter = buyer
+					rentedItem.item = item
+					rentedItem.quantity = request.quantity
+					rentedItem.item_code = request.item_code
+					rentedItem.rent_date =  datetime.now()
+					rentedItem.rent_expiration = expiry
+					rentedItem.penalty = 0
+					rentedItem.save()
 
 				transaction = Transaction()
 				transaction.item = item
