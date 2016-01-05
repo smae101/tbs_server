@@ -167,7 +167,7 @@ class RentedItemSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.RentedItem
-		fields = 'id','buyer', 'item', 'quantity', 'item_code', 'reserved_date', 'request_expiration', 'pending'
+		fields = 'id', 'renter', 'item', 'quantity', 'item_code', 'rent_date', 'rent_expiration', 'penalty'
 
 	def get_reserved_date(self, obj):
 		date = getattr(obj,'rent_date')
