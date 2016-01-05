@@ -1142,7 +1142,7 @@ class ReservedItemClaimedView(View):
 			return JsonResponse(response)
 		else:
 			request = ReservationRequest.objects.get(id=request_id,status="Available")
-			item = Item.objects.get(id=item_id, status="Reserved")
+			item = Item.objects.get(id=item_id)
 
 			if(item or request) is None:
 				response = {
