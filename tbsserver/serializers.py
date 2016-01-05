@@ -166,7 +166,7 @@ class RentedItemSerializer(serializers.ModelSerializer):
 	rent_expiration = serializers.SerializerMethodField()
 
 	class Meta:
-		model = models.ReservationRequest
+		model = models.RentedItem
 		fields = 'id','buyer', 'item', 'quantity', 'item_code', 'reserved_date', 'request_expiration', 'pending'
 
 	def get_reserved_date(self, obj):
