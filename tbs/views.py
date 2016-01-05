@@ -1333,8 +1333,6 @@ class ReturnRentedItemView(View):
 
 		item_id = request.POST.get('item_id',None)
 		rent_id = request.POST.get('rent_id',None)
-		#renter = request.POST.get('renter',None)
-		#stars_required = request.POST.get('stars_required', None)
 		status = 'Available'
 
 		if (item_id or rent_id) is None:
@@ -1344,7 +1342,7 @@ class ReturnRentedItemView(View):
 			}
 			return JsonResponse(response)
 		else:
-			request = RentedItems.objects.get(id=rent_id)
+			request = RentedItem.objects.get(id=rent_id)
 			item = Item.objects.get(id=item_id)
 
 			if(item or request) is None:
@@ -1372,20 +1370,6 @@ class ReturnRentedItemView(View):
 				notif.status = "unread"
 				notif.save()
 
-				'''buyer = UserProfile.objects.get(user=request.buyer)
-				stars_to_add = 0
-				if item.purpose == 'Sell':
-					if item.stars_to_use == 0:
-						stars_to_add = item.price/20
-					else:
-						discount = item.stars_to_use/1000
-						stars_to_add = (item.price*(1-discount))/20
-				else:
-					stars_to_add = item.stars_required/2
-				
-				buyer.stars_collected = buyer.stars_collected + stars_to_add
-				buyer.save()'''
-
 				transaction = Transaction()
 				transaction.item = item
 				transaction.seller = item.owner
@@ -1410,9 +1394,6 @@ class NotifyRenterView(View):
 
 		item_id = request.POST.get('item_id',None)
 		rent_id = request.POST.get('rent_id',None)
-		#renter = request.POST.get('renter',None)
-		#stars_required = request.POST.get('stars_required', None)
-		#status = 'Available'
 
 		if (item_id or rent_id) is None:
 			response = {
@@ -1421,7 +1402,7 @@ class NotifyRenterView(View):
 			}
 			return JsonResponse(response)
 		else:
-			request = RentedItems.objects.get(id=rent_id)
+			request = RentedItem.objects.get(id=rent_id)
 			item = Item.objects.get(id=item_id)
 
 			if(item or request) is None:
@@ -1431,11 +1412,6 @@ class NotifyRenterView(View):
 				}
 				return JsonResponse(response)
 			else:
-				#item.status = status
-				#item.save()
-
-
-				#target = User.objects.get(username=item.owner.user.username)
 				maker = User.objects.get(is_staff=True)
 
 				notif = Notification()
