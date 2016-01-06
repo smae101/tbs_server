@@ -270,6 +270,48 @@ class ReservationViewSet(viewsets.ReadOnlyModelViewSet):
 
 		return super(ReservationViewSet, self).get_queryset()
 
+class ReservedItemsOnSaleViewSet(viewsets.ReadOnlyModelViewSet):
+	date_now = datetime.now()
+	queryset = models.ReservationRequest.objects.filter(request_expiration__gt = date_now)
+	serializer_class = ReservationSerializer
+
+	def get_queryset(self):
+		date_now = datetime.now()
+		username = self.request.query_params.get('username',None)
+
+		if username is not None:
+			return models.ReservationRequest.objects.filter(request_expiration__gt = date_now, buyer__username__iexact = username, item__purpose = "Sell")
+
+		return super(ReservedItemsOnSaleViewSet, self).get_queryset()
+
+class ReservedItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
+	date_now = datetime.now()
+	queryset = models.ReservationRequest.objects.filter(request_expiration__gt = date_now)
+	serializer_class = ReservationSerializer
+
+	def get_queryset(self):
+		date_now = datetime.now()
+		username = self.request.query_params.get('username',None)
+
+		if username is not None:
+			return models.ReservationRequest.objects.filter(request_expiration__gt = date_now, buyer__username__iexact = username, item__purpose = "Rent")
+
+		return super(ReservedItemsForRentViewSet, self).get_queryset()
+
+class ReservedItemsForDonationViewSet(viewsets.ReadOnlyModelViewSet):
+	date_now = datetime.now()
+	queryset = models.ReservationRequest.objects.filter(request_expiration__gt = date_now)
+	serializer_class = ReservationSerializer
+
+	def get_queryset(self):
+		date_now = datetime.now()
+		username = self.request.query_params.get('username',None)
+
+		if username is not None:
+			return models.ReservationRequest.objects.filter(request_expiration__gt = date_now, buyer__username__iexact = username, item__purpose = "Donate")
+
+		return super(ReservedItemsForDonationViewSet, self).get_queryset()
+
 #User: Sell Items
 class ItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = models.Item.objects.all()
