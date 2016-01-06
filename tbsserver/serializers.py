@@ -372,7 +372,7 @@ class RentedItemsViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.RentedItem.objects.filter(renter__user__username__iexact = username)
+			return models.RentedItem.objects.filter(renter__username__iexact = username)
 
 		return super(RentedItemsViewSet, self).get_queryset()
 
