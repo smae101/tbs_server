@@ -117,7 +117,7 @@ class RentedItem(models.Model):
 
 
 class Transaction(models.Model):
-	item = models.OneToOneField(Item)
+	item = models.ForeignKey(Item)
 	item_code = models.CharField(max_length=100, blank=True, null=True)
 	seller = models.ForeignKey(UserProfile,related_name="transactions_as_owner")
 	buyer = models.ForeignKey(UserProfile,related_name="transactions_as_buyer")
