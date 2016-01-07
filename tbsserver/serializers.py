@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
 
 from tbs import models
 
@@ -348,7 +347,7 @@ class AvailableItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(purpose="Sell").exclude(owner__user__username__iexact = username)
+			return models.Item.objects.filter(purpose="Sell").exclude(owner__user__username__iexact = username, quantity = 0)
 		return super(AvailableItemsToSellViewSet, self).get_queryset()
 
 #User: Rent Items
