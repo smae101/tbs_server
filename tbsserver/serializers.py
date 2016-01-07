@@ -348,6 +348,7 @@ class AvailableItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 
 		if username is not None:
 			return models.Item.objects.filter(purpose="Sell").exclude(owner__user__username__iexact = username)
+
 		return super(AvailableItemsToSellViewSet, self).get_queryset()
 
 #User: Rent Items
@@ -359,7 +360,7 @@ class AvailableItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(purpose="Rent").exclude(owner__user__username__iexact = username, status="Pending", quantity = 0)
+			return models.Item.objects.filter(purpose="Rent").exclude(owner__user__username__iexact = username)
 
 		return super(AvailableItemsForRentViewSet, self).get_queryset()
 
