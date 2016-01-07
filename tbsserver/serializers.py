@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from tbs import models
 
@@ -347,7 +348,7 @@ class AvailableItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(purpose="Sell").exclude(owner__user__username__iexact = username)
+			return models.Item.objects.filter(purpose="Sell").exclude(Q(owner__user__username__iexact = username) | Q(status="Pending") | Q(quantity=0))
 
 		return super(AvailableItemsToSellViewSet, self).get_queryset()
 
@@ -360,7 +361,7 @@ class AvailableItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(purpose="Rent").exclude(owner__user__username__iexact = username)
+			return models.Item.objects.filter(purpose="Rent").exclude(Q(owner__user__username__iexact = username) | Q(status="Pending") | Q(quantity=0))
 
 		return super(AvailableItemsForRentViewSet, self).get_queryset()
 
@@ -386,7 +387,7 @@ class AllDonationsViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(status="Available", purpose="Donate").exclude(owner__user__username__iexact = username)
+			return models.Item.objects.filter(purpose="Donate").exclude(Q(owner__user__username__iexact = username) | Q(status="Pending") | Q(quantity=0))
 
 		return super(AllDonationsViewSet, self).get_queryset()
 
