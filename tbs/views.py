@@ -10,7 +10,7 @@ from django.views.generic import View
 
 from rest_framework.parsers import JSONParser
 
-from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest, RentedItem
+from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest, RentedItem, ItemCode
 
 from datetime import datetime
 
@@ -610,9 +610,13 @@ class BuyItemView(View):
 		item_id = request.POST.get('item_id',None)
 		quantity = request.POST.get('quantity',None)
 		stars_to_use = request.POST.get('stars_to_use', None)
-		item_code = request.POST.get('item_code',None)
 
-		if buyer and item_id and quantity and item_code and stars_to_use:
+		code = ItemCode.objects.get(id=1)
+		current_code = code.item_code
+		new_item_code = int(current_code) + 1
+
+
+		if buyer and item_id and quantity and stars_to_use:
 			user =  User.objects.get(username=buyer)
 			if user is not None:
 				item = Item.objects.get(id=item_id)
@@ -633,7 +637,7 @@ class BuyItemView(View):
 						reservation_request.buyer = user
 						reservation_request.item = item
 						reservation_request.quantity = quantity
-						reservation_request.item_code = item_code
+						reservation_request.item_code = str(new_item_code)
 						reservation_request.status = "Reserved"
 						reservation_request.save()
 
@@ -641,7 +645,8 @@ class BuyItemView(View):
 						notif_admin.target = User.objects.get(is_staff=True)
 						notif_admin.maker = user
 						notif_admin.item = item
-						notif_admin.message = buyer + " wants to buy the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + item_code + "."
+						notif_admin.item_code = str(new_item_code)
+						notif_admin.message = buyer + " wants to buy the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
 						notif_admin.notification_type = "buy"
 						notif_admin.status = "unread"
 						notif_admin.save()
@@ -650,10 +655,14 @@ class BuyItemView(View):
 						notif_seller.target = User.objects.get(username=item.owner.user.username)
 						notif_seller.maker = user
 						notif_seller.item = item
-						notif_seller.message = buyer + " wants to buy your " + item.name + " with item code: " + item_code + " (quantity = " + quantity + ")."
+						notif_seller.item_code = str(new_item_code)
+						notif_seller.message = buyer + " wants to buy your " + item.name + " with item code: " + str(new_item_code) + " (quantity = " + quantity + ")."
 						notif_seller.notification_type = "buy"
 						notif_seller.status = "unread"
 						notif_seller.save()
+
+						code.item_code =  str(new_item_code)
+						code.save()
 
 						response = {
 							'status': 201,
@@ -694,9 +703,12 @@ class RentItemView(View):
 		item_id = request.POST.get('item_id',None)
 		quantity = request.POST.get('quantity',None)
 		stars_to_use = request.POST.get('stars_to_use', None)
-		item_code = request.POST.get('item_code',None)
 
-		if renter and item_id and quantity and stars_to_use and item_code:
+		code = ItemCode.objects.get(id=1)
+		current_code = code.item_code
+		new_item_code = int(current_code) + 1
+
+		if renter and item_id and quantity and stars_to_use:
 			user =  User.objects.get(username=renter)
 			if user is not None:
 				item = Item.objects.get(id=item_id)
@@ -717,7 +729,7 @@ class RentItemView(View):
 						reservation_request.buyer = user
 						reservation_request.item = item
 						reservation_request.quantity = quantity
-						reservation_request.item_code = item_code
+						reservation_request.item_code = str(new_item_code)
 						reservation_request.status = "Reserved"
 						reservation_request.save()
 
@@ -725,7 +737,8 @@ class RentItemView(View):
 						notif_admin.target = User.objects.get(is_staff=True)
 						notif_admin.maker = user
 						notif_admin.item = item
-						notif_admin.message = renter + " wants to rent the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + item_code + "."
+						notif_admin.item_code = str(new_item_code)
+						notif_admin.message = renter + " wants to rent the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
 						notif_admin.notification_type = "rent"
 						notif_admin.status = "unread"
 						notif_admin.save()
@@ -734,10 +747,14 @@ class RentItemView(View):
 						notif_seller.target = User.objects.get(username=item.owner.user.username)
 						notif_seller.maker = user
 						notif_seller.item = item
-						notif_seller.message = renter + " wants to rent your " + item.name + " with item code: " + item_code + " (quantity = " + quantity + ")."
+						notif_seller.item_code = str(new_item_code)
+						notif_seller.message = renter + " wants to rent your " + item.name + " with item code: " + str(new_item_code) + " (quantity = " + quantity + ")."
 						notif_seller.notification_type = "rent"
 						notif_seller.status = "unread"
 						notif_seller.save()
+
+						code.item_code =  str(new_item_code)
+						code.save()
 
 						response = {
 							'status': 201,
@@ -847,9 +864,12 @@ class GetDonatedItemView(View):
 		buyer = request.POST.get('buyer',None)
 		item_id = request.POST.get('item_id',None)
 		quantity = request.POST.get('quantity',None)
-		item_code = request.POST.get('item_code',None)
 
-		if buyer and item_id and quantity and item_code:
+		code = ItemCode.objects.get(id=1)
+		current_code = code.item_code
+		new_item_code = int(current_code) + 1
+
+		if buyer and item_id and quantity:
 			user =  User.objects.get(username=buyer)
 			if user is not None:
 				donee = UserProfile.objects.get(user=user)
@@ -868,7 +888,7 @@ class GetDonatedItemView(View):
 							reservation_request.buyer = user
 							reservation_request.item = item
 							reservation_request.quantity = quantity
-							reservation_request.item_code = item_code
+							reservation_request.item_code = str(new_item_code)
 							reservation_request.status = "Reserved"
 							reservation_request.save()
 
@@ -876,8 +896,8 @@ class GetDonatedItemView(View):
 							notif_admin.target = User.objects.get(is_staff=True)
 							notif_admin.maker = user
 							notif_admin.item = item
-							notif_admin.item_code = item_code
-							notif_admin.message = buyer + " wants to get the " + item.name + " donated by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + item_code + "."
+							notif_admin.item_code = str(new_item_code)
+							notif_admin.message = buyer + " wants to get the " + item.name + " donated by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
 							notif_admin.notification_type = "get"
 							notif_admin.status = "unread"
 							notif_admin.save()
@@ -886,11 +906,14 @@ class GetDonatedItemView(View):
 							notif_seller.target = User.objects.get(username=item.owner.user.username)
 							notif_seller.maker = user
 							notif_seller.item = item
-							notif_seller.item_code = item_code
-							notif_seller.message = buyer + " wants to get your donated item " + item.name + " with item code " + item_code + " (quantity = " + quantity + ")."
+							notif_seller.item_code = str(new_item_code)
+							notif_seller.message = buyer + " wants to get your donated item " + item.name + " with item code " + str(new_item_code) + " (quantity = " + quantity + ")."
 							notif_seller.notification_type = "get"
 							notif_seller.status = "unread"
 							notif_seller.save()
+
+							code.item_code =  str(new_item_code)
+							code.save()
 
 							response = {
 								'status': 201,

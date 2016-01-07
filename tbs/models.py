@@ -160,6 +160,11 @@ class Notification(models.Model):
 		return str(self.message)
 
 
+class ItemCode(models.Model):
+	item_code = models.CharField(max_length=100, default='0')
+
+	def __str__(self):
+		return str(self.item_code)
 
 
 

@@ -67,7 +67,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Notification
-		fields = 'id','target','maker', 'item', 'message', 'notification_type', 'status', 'notification_date', 'notification_expiration'
+		fields = 'id','target','maker', 'item', 'item_code', 'message', 'notification_type', 'status', 'notification_date', 'notification_expiration'
 
 	def get_notification_date(self, obj):
 		date = getattr(obj,'notification_date')
