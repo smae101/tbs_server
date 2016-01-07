@@ -339,7 +339,7 @@ class PendingItemsViewSet(viewsets.ReadOnlyModelViewSet):
 		return super(PendingItemsViewSet, self).get_queryset()
 
 #User: Buy Items
-class AvailableItemsViewSet(viewsets.ReadOnlyModelViewSet):
+class AvailableItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = models.Item.objects.all()
 	serializer_class = ItemSerializer
 
@@ -347,10 +347,10 @@ class AvailableItemsViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			#return models.Item.objects.filter(purpose="Sell", quantity != 0, status != "Pending").exclude(owner__user__username__iexact = username, status="Pending", quantity = 0)
-			return models.Item.objects.filter(purpose="Sell", quantity != 0, status != "Pending").exclude(owner__user__username__iexact = username)
+			return models.Item.objects.filter(purpose="Sell").exclude(owner__user__username__iexact = username and status="Pending" and quantity = 0)
+			#return models.Item.objects.filter(purpose="Sell", quantity != 0, status != "Pending").exclude(owner__user__username__iexact = username)
 
-		return super(AvailableItemsViewSet, self).get_queryset()
+		return super(AvailableItemsToSellViewSet, self).get_queryset()
 
 #User: Donate Items
 class ItemsToDonateViewSet(viewsets.ReadOnlyModelViewSet):
