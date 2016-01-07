@@ -351,6 +351,19 @@ class AvailableItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 
 		return super(AvailableItemsToSellViewSet, self).get_queryset()
 
+#User: Rent Items
+class AvailableItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
+	queryset = models.Item.objects.all()
+	serializer_class = ItemSerializer
+
+	def get_queryset(self):
+		username = self.request.query_params.get('username', None)
+
+		if username is not None:
+			return models.Item.objects.filter(purpose="Rent").exclude(owner__user__username__iexact = username, status="Pending", quantity = 0)
+
+		return super(AvailableItemsForRentViewSet, self).get_queryset()
+
 #User: Donate Items
 class ItemsToDonateViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = models.Item.objects.all()
