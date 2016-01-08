@@ -609,14 +609,14 @@ class BuyItemView(View):
 		buyer = request.POST.get('buyer',None)
 		item_id = request.POST.get('item_id',None)
 		quantity = request.POST.get('quantity',None)
-		stars_to_use = request.POST.get('stars_to_use', None)
+		stars_to_use = request.POST.get('stars_to_use', 0)
 
 		code = ItemCode.objects.get(id=1)
 		current_code = code.item_code
 		new_item_code = int(current_code) + 1
 
 
-		if buyer and item_id and quantity and stars_to_use:
+		if buyer and item_id and quantity:
 			user =  User.objects.get(username=buyer)
 			if user is not None:
 				item = Item.objects.get(id=item_id)
@@ -702,13 +702,13 @@ class RentItemView(View):
 		renter = request.POST.get('renter',None)
 		item_id = request.POST.get('item_id',None)
 		quantity = request.POST.get('quantity',None)
-		stars_to_use = request.POST.get('stars_to_use', None)
+		stars_to_use = request.POST.get('stars_to_use', 0)
 
 		code = ItemCode.objects.get(id=1)
 		current_code = code.item_code
 		new_item_code = int(current_code) + 1
 
-		if renter and item_id and quantity and stars_to_use:
+		if renter and item_id and quantity:
 			user =  User.objects.get(username=renter)
 			if user is not None:
 				item = Item.objects.get(id=item_id)
