@@ -27,7 +27,6 @@ router.register(r'available_items_for_rent', serializers.AvailableItemsForRentVi
 router.register(r'items_to_donate', serializers.ItemsToDonateViewSet)
 router.register(r'all_donations', serializers.AllDonationsViewSet)
 router.register(r'items_for_rent', serializers.ItemsForRentViewSet)
-router.register(r'all_items_for_rent', serializers.AllItemsForRentViewSet)
 router.register(r'rented_items', serializers.RentedItemsViewSet)
 router.register(r'reserved_items_on_sale', serializers.ReservedItemsOnSaleViewSet)
 router.register(r'reserved_items_for_rent', serializers.ReservedItemsForRentViewSet)

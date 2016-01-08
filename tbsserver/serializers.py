@@ -322,7 +322,7 @@ class ItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Sell").exclude(status="Sold" and "Pending")
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Sell").exclude(Q(status="Pending") | Q(quantity=0))
 
 		return super(ItemsToSellViewSet, self).get_queryset()
 
@@ -374,7 +374,7 @@ class ItemsToDonateViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Donate").exclude(status="sold" and "Pending")
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Donate").exclude(Q(status="Pending") | Q(quantity=0))
 
 		return super(ItemsToDonateViewSet, self).get_queryset()
 
@@ -401,12 +401,12 @@ class ItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Rent").exclude(status="sold" and "Pending")
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Rent").exclude(Q(status="Pending") | Q(quantity=0))
 
 		return super(ItemsForRentViewSet, self).get_queryset()
 
 #User: Rent Items
-class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
+'''class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 	queryset = models.Item.objects.all()
 	serializer_class = ItemSerializer
 
@@ -417,7 +417,7 @@ class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 			return models.Item.objects.filter(status="Available", purpose="Rent").exclude(owner__user__username__iexact = username)
 
 		return super(AllItemsForRentViewSet, self).get_queryset()
-
+'''
 
 #User: Rented Items
 class RentedItemsViewSet(viewsets.ReadOnlyModelViewSet):
