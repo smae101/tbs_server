@@ -27,4 +27,6 @@ urlpatterns = [
 	url(r'^set_stars_collected$', views.SetStarsCollectedView.as_view(), name='set_stars_collected'),
 	url(r'^return_rented$', views.ReturnRentedItemView.as_view(), name='return_rented'),
 	url(r'^notify_renter$', views.NotifyRenterView.as_view(), name='notify_renter'),
+	url(r'^check_expiration$', views.CheckExpirationView.as_view(), name='check_expiration'),
+	url(r'^admin_check_expiration$', views.AdminCheckExpirationView.as_view(), name='admin_check_expiration'),
 ]

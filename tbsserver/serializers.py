@@ -147,7 +147,7 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.ReservationRequest
-		fields = 'id','buyer', 'item', 'quantity', 'item_code', 'reserved_date', 'request_expiration', 'status'
+		fields = 'id','buyer', 'item', 'quantity', 'item_code', 'stars_to_use', 'payment', 'reserved_date', 'request_expiration', 'status'
 
 	def get_reserved_date(self, obj):
 		date = getattr(obj,'reserved_date')
@@ -322,7 +322,7 @@ class ItemsToSellViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Sell").exclude(Q(status="Pending") | Q(quantity=0))
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Sell").exclude(Q(status="Pending") | Q(quantity=0) | Q(status="Disapproved"))
 
 		return super(ItemsToSellViewSet, self).get_queryset()
 
@@ -374,7 +374,7 @@ class ItemsToDonateViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Donate").exclude(Q(status="Pending") | Q(quantity=0))
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Donate").exclude(Q(status="Pending") | Q(quantity=0) | Q(status="Disapproved"))
 
 		return super(ItemsToDonateViewSet, self).get_queryset()
 
@@ -401,23 +401,10 @@ class ItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
 		username = self.request.query_params.get('username', None)
 
 		if username is not None:
-			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Rent").exclude(Q(status="Pending") | Q(quantity=0))
+			return models.Item.objects.filter(owner__user__username__iexact = username, purpose="Rent").exclude(Q(status="Pending") | Q(quantity=0) | Q(status="Disapproved"))
 
 		return super(ItemsForRentViewSet, self).get_queryset()
 
-#User: Rent Items
-'''class AllItemsForRentViewSet(viewsets.ReadOnlyModelViewSet):
-	queryset = models.Item.objects.all()
-	serializer_class = ItemSerializer
-
-	def get_queryset(self):
-		username = self.request.query_params.get('username', None)
-
-		if username is not None:
-			return models.Item.objects.filter(status="Available", purpose="Rent").exclude(owner__user__username__iexact = username)
-
-		return super(AllItemsForRentViewSet, self).get_queryset()
-'''
 
 #User: Rented Items
 class RentedItemsViewSet(viewsets.ReadOnlyModelViewSet):

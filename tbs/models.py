@@ -17,6 +17,7 @@ class UserProfile(models.Model):
 	student = models.OneToOneField(Student)
 	stars_collected = models.IntegerField(default=0)
 	picture = models.URLField(blank=True, null=True)
+	status = models.CharField(max_length=100, default="active")
 
 	def __str__(self):
 		return self.user.first_name + ' ' + self.user.last_name
@@ -44,16 +45,15 @@ class Item(models.Model):
 	name = models.CharField(max_length=50)
 	description = models.CharField(max_length=500)
 	category = models.ForeignKey(Category, blank=True, null=True)
-	#status = models.CharField(max_length=15, choices=status_type)
 	status = models.CharField(max_length=15)
-	#purpose = models.CharField(max_length=10, choices=purpose_type)
 	purpose = models.CharField(max_length=10)
 	price = models.FloatField(default=0)
 	quantity = models.IntegerField(default=0)
 	stars_to_use = models.IntegerField(default=0)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
-	date_approved = models.DateTimeField("Date Approved", null=True, blank=True)
+	date_approved = models.DateTimeField(null=True, blank=True)
+	rent_duration = models.IntegerField(default=0)
 
 	def __str__(self):
 		return self.name
@@ -92,6 +92,8 @@ class ReservationRequest(models.Model):
 	item = models.ForeignKey(Item)
 	quantity = models.IntegerField(default=0)
 	item_code = models.CharField(max_length=100, blank=True, null=True)
+	stars_to_use = models.IntegerField(default=0)
+	payment = models.FloatField(default=0)
 	reserved_date = models.DateTimeField(auto_now_add=True)
 	request_expiration = models.DateTimeField(default=expiry)
 	status = models.CharField(max_length=10)
@@ -111,12 +113,14 @@ class RentedItem(models.Model):
 	rent_date = models.DateTimeField(auto_now_add=True)
 	rent_expiration = models.DateTimeField(default=expiry)
 	penalty = models.FloatField(default=0)
+	notified = models.IntegerField(default=0) #1: 1 day before expiration, 2: expired with penalty counting per hour, 3: 1 day before blocked, 4: 
 
 	def __str__(self):
 		return self.item.name
 
 
 class Transaction(models.Model):
+	transaction_type = models.CharField(max_length=10)
 	item = models.ForeignKey(Item)
 	item_code = models.CharField(max_length=100, blank=True, null=True)
 	seller = models.ForeignKey(UserProfile,related_name="transactions_as_owner")
