@@ -913,7 +913,7 @@ class GetDonatedItemView(View):
 				item = Item.objects.get(id=item_id)
 				if item is not None:
 					if item.quantity >= int(quantity) and int(quantity) > 0:
-						if donee.stars_collected >= item.stars_required:
+						if donee.stars_collected >= (item.stars_required * int(quantity)):
 
 							reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Donate").aggregate(Sum('quantity')).get('quantity__sum', 0)
 							print("Reserved items count (Donate): "+str(reserved_count))
@@ -930,7 +930,7 @@ class GetDonatedItemView(View):
 								item.quantity = item.quantity - int(quantity)
 								item.save()
 								
-								donee.stars_collected = donee.stars_collected - item.stars_required
+								donee.stars_collected = donee.stars_collected - (item.stars_required * int(quantity))
 								donee.save()
 
 								reservation_request = ReservationRequest()
@@ -1675,7 +1675,7 @@ class CheckExpirationView(View):
 
 						print("Expired with no penalty")
 
-					elif hours_after >= 1 and userProfile.status == "active":
+					elif hours_after >= 1:
 						print("expired after an hour or more")
 						payment = rented_item.item.price * rented_item.quantity
 						if rented_item.notified == 2 or rented_item.notified == 3:
@@ -1729,7 +1729,7 @@ class CheckExpirationView(View):
 
 								print("For 1 day before blocked: " + str(rented_item.penalty) + ", hours = " + str(hours_before_blocked))
 
-						elif datetime.now() >= blocked_date:
+						elif datetime.now() >= blocked_date and userProfile.status == "active":
 							notif = Notification()
 							notif.target = rented_item.renter
 							notif.maker = admin
@@ -1855,7 +1855,7 @@ class AdminCheckExpirationView(View):
 
 					print("Expired with no penalty")
 
-				elif hours_after >= 1 and userProfile.status == "active":
+				elif hours_after >= 1:
 					print("expired after an hour or more")
 					payment = rented_item.item.price * rented_item.quantity
 					if rented_item.notified == 2 or rented_item.notified == 3: #compute for the penalty only, no notification
@@ -1909,7 +1909,7 @@ class AdminCheckExpirationView(View):
 
 							print("For 1 day before blocked: " + str(rented_item.penalty) + ", hours = " + str(hours_before_blocked))
 
-					elif datetime.now() >= blocked_date: #notify that blocked
+					elif datetime.now() >= blocked_date and userProfile.status == "active": #notify that blocked
 						notif = Notification()
 						notif.target = rented_item.renter
 						notif.maker = admin
