@@ -636,7 +636,7 @@ class BuyItemView(View):
 						if total <= 3 and int(quantity) <= 3:
 							reservation_request = ReservationRequest()
 
-							if stars_to_use is not "":
+							if stars_to_use != "":
 								discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
 								reservation_request.stars_to_use = int(stars_to_use)
 								reservation_request.payment = discounted_price * quantity
