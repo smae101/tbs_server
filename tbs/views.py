@@ -1658,7 +1658,7 @@ class CheckExpirationView(View):
 
 					print("Hours after expiration: " + str(hours_after))
 
-					if hours_after == 0:
+					if hours_after == 0 and rented_item.notified is not 2:
 						print("For expired at exactly datetime.now: " + str(rented_item.id))
 						notif = Notification()
 						notif.target = rented_item.renter
@@ -1838,7 +1838,7 @@ class AdminCheckExpirationView(View):
 
 				print("Hours after expiration: " + str(hours_after))
 
-				if hours_after == 0:
+				if hours_after == 0  and rented_item.notified is not 2:
 					print("For expired at exactly datetime.now: " + str(rented_item.id))
 					notif = Notification()
 					notif.target = rented_item.renter
@@ -1855,7 +1855,7 @@ class AdminCheckExpirationView(View):
 
 					print("Expired with no penalty")
 
-				elif hours_after >= 1:
+				elif hours_after >= 1 :
 					print("expired after an hour or more")
 					payment = rented_item.item.price * rented_item.quantity
 					if rented_item.notified == 2 or rented_item.notified == 3: #compute for the penalty only, no notification
