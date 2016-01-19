@@ -1645,7 +1645,7 @@ class CheckExpirationView(View):
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
 						notif.message = "You only have " + str(hours_before) + " hours to return your rented item, " + rented_item.item.name + ", with item code " + rented_item.item_code + ". Please return it on or before " + str(rented_item.rent_expiration) + " to avoid penalty."
-						notif.notification_type = "rented_item"
+						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
 
@@ -1666,7 +1666,7 @@ class CheckExpirationView(View):
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
 						notif.message = "Your rented item, " + rented_item.item.name + " with item code, " + rented_item.item_code +" has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
-						notif.notification_type = "rented_item"
+						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
 
@@ -1690,7 +1690,7 @@ class CheckExpirationView(View):
 							notif.item = rented_item.item
 							notif.item_code = rented_item.item_code
 							notif.message = "Your rented item, " + rented_item.item.name + " with item code, " + rented_item.item_code +" has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
-							notif.notification_type = "rented_item"
+							notif.notification_type = "rentedItem"
 							notif.status = "unread"
 							notif.save()
 
@@ -1720,7 +1720,7 @@ class CheckExpirationView(View):
 								notif.item = rented_item.item
 								notif.item_code = rented_item.item_code
 								notif.message = "You only have " + str(hours_before_blocked) + " hours before you will be blocked. Being blocked means that you will not be able to make any transactions using this app until you return your rented item, " + rented_item.item.name + " with item code, " + rented_item.item_code + "."
-								notif.notification_type = "rented_item"
+								notif.notification_type = "rentedItem"
 								notif.status = "unread"
 								notif.save()
 
@@ -1736,7 +1736,7 @@ class CheckExpirationView(View):
 							notif.item = rented_item.item
 							notif.item_code = rented_item.item_code
 							notif.message = "You have been blocked for not being able to return the item within 2 weeks after its expiration date."
-							notif.notification_type = "rented_item"
+							notif.notification_type = "rentedItem"
 							notif.status = "unread"
 							notif.save()
 
@@ -1825,7 +1825,7 @@ class AdminCheckExpirationView(View):
 					notif.item = rented_item.item
 					notif.item_code = rented_item.item_code
 					notif.message = "You only have " + str(hours_before) + " hours to return your rented item, " + rented_item.item.name + ", with item code " + rented_item.item_code + ". Please return it on or before " + str(rented_item.rent_expiration) + " to avoid penalty."
-					notif.notification_type = "rented_item"
+					notif.notification_type = "rentedItem"
 					notif.status = "unread"
 					notif.save()
 
@@ -1846,7 +1846,7 @@ class AdminCheckExpirationView(View):
 					notif.item = rented_item.item
 					notif.item_code = rented_item.item_code
 					notif.message = "Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
-					notif.notification_type = "rented_item"
+					notif.notification_type = "rentedItem"
 					notif.status = "unread"
 					notif.save()
 
@@ -1870,7 +1870,7 @@ class AdminCheckExpirationView(View):
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
 						notif.message = "Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
-						notif.notification_type = "rented_item"
+						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
 
@@ -1900,7 +1900,7 @@ class AdminCheckExpirationView(View):
 							notif.item = rented_item.item
 							notif.item_code = rented_item.item_code
 							notif.message = "You only have " + str(hours_before_blocked) + " hours before you will be blocked. Being blocked means that you will not be able to make any transactions using this app until you return your rented item."
-							notif.notification_type = "rented_item"
+							notif.notification_type = "rentedItem"
 							notif.status = "unread"
 							notif.save()
 
@@ -1916,7 +1916,7 @@ class AdminCheckExpirationView(View):
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
 						notif.message = "You have been blocked for not being able to return the item within 2 weeks after its expiration date."
-						notif.notification_type = "rented_item"
+						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
 
