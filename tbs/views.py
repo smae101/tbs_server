@@ -1183,7 +1183,7 @@ class ReservedItemAvailableView(View):
 				notif.maker = maker
 				notif.item = item
 				notif.item_code = request.item_code
-				notif.message = "Your reserved item, " + item.name + " with item code " + request.item_code + " in now available "
+				notif.message = "Your reserved item, " + item.name + " with item code " + request.item_code + " is now available "
 				notif.notification_type = "Available"
 				notif.status = "unread"
 				notif.save()
