@@ -266,15 +266,25 @@ class SellItemView(View):
 
 		if owner and name and description and price and quantity:
 			user = User.objects.get(username=owner)
+			item_owner = UserProfile.objects.get(user=user)
+
 			if user is None :
 				response = {
 					'status': 404,
 					'statusText': 'No username to refer to',
 				}
 				return JsonResponse(response)
-			else:
-				item_owner = UserProfile.objects.get(user=user)
 
+
+			elif item_owner.status == "blocked":
+					response = {
+						'status': 403,
+						'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
+					}
+					return JsonResponse(response)
+
+
+			else:
 				approval_sell_request = ApprovalSellRequest()
 
 				item = Item()
@@ -338,17 +348,25 @@ class ForRentItemView(View):
 
 		if owner and name and description and price and quantity and rent_duration:
 			user = User.objects.get(username=owner)
-			print (owner)
-			print (user)
+			item_owner = UserProfile.objects.get(user=user)
+			
 			if user is None :
 				response = {
 					'status': 404,
 					'statusText': 'No username to refer to',
 				}
 				return JsonResponse(response)
-			else:
-				item_owner = UserProfile.objects.get(user=user)
 
+
+			elif item_owner.status == "blocked":
+					response = {
+						'status': 403,
+						'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
+					}
+					return JsonResponse(response)
+
+
+			else:
 				approval_sell_request = ApprovalSellRequest()
 
 				item = Item()
@@ -410,15 +428,25 @@ class DonateItemView(View):
 
 		if owner and name and description and quantity:
 			user = User.objects.get(username=owner)
+			item_owner = UserProfile.objects.get(user=user)
+
 			if user is None :
 				response = {
 					'status': 404,
 					'statusText': 'No username to refer to',
 				}
 				return JsonResponse(response)
-			else:
-				item_owner = UserProfile.objects.get(user=user)
 
+
+			elif item_owner.status == "blocked":
+					response = {
+						'status': 403,
+						'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
+					}
+					return JsonResponse(response)
+
+
+			else:
 				approval_donate_request = ApprovalDonateRequest()
 
 				item = Item()
@@ -480,14 +508,25 @@ class EditItemView(View):
 		quantity = request.POST.get('quantity',None)
 
 		user = User.objects.get(username=owner)
+		item_owner = UserProfile.objects.get(user=user)
+
 		if user is None :
 			response = {
 				'status': 404,
 				'statusText': 'No username to refer to',
 			}
 			return JsonResponse(response)
+
+
+		elif item_owner.status == "blocked":
+			response = {
+				'status': 403,
+				'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
+			}
+			return JsonResponse(response)
+
+
 		else:
-			item_owner = UserProfile.objects.get(user=user)
 
 			item = Item.objects.get(id=item_id)
 			item.owner = item_owner
@@ -553,6 +592,8 @@ class DeleteItemView(View):
 				'statusText': 'No username to refer to',
 			}
 			return JsonResponse(response)
+
+
 		else:
 			item_owner = UserProfile.objects.get(user=user)
 			item = Item.objects.get(id=item_id, owner=item_owner)
@@ -619,88 +660,97 @@ class BuyItemView(View):
 		if buyer and item_id and quantity:
 			user =  User.objects.get(username=buyer)
 			if user is not None:
-				item = Item.objects.get(id=item_id)
-				if item is not None:
-					if item.quantity >= int(quantity) and int(quantity) > 0:
+				user_profile = UserProfile.objects.get(user=user)
+				if user_profile.status == "blocked":
+					response = {
+						'status': 403,
+						'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
+					}
+					return JsonResponse(response)
 
-						reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Sell").aggregate(Sum('quantity')).get('quantity__sum', 0)
-						print("Reserved items count (Sell): "+str(reserved_count))
+				else: 
+					item = Item.objects.get(id=item_id)
+					if item is not None:
+						if item.quantity >= int(quantity) and int(quantity) > 0:
 
-						if reserved_count is None:
-							total = 0
-						else:
-							total = int(reserved_count) + int(quantity)
+							reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Sell").aggregate(Sum('quantity')).get('quantity__sum', 0)
+							print("Reserved items count (Sell): "+str(reserved_count))
 
-						print("Total items to be reserved: " + str(total))
-
-						if total <= 3 and int(quantity) <= 3:
-							reservation_request = ReservationRequest()
-
-							if stars_to_use != "":
-								discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
-								reservation_request.stars_to_use = int(stars_to_use)
-								reservation_request.payment = discounted_price * quantity
-
-								buyerProfile = UserProfile.objects.get(user=user)
-								buyerProfile.stars_collected = buyerProfile.stars_collected - int(stars_to_use)
-								buyerProfile.save()
-
+							if reserved_count is None:
+								total = 0
 							else:
-								reservation_request.payment = item.price * float(quantity)
+								total = int(reserved_count) + int(quantity)
 
-							item.status = "Reserved"
-							item.quantity = item.quantity - int(quantity)
-							item.save()
-							
-							reservation_request.buyer = user
-							reservation_request.item = item
-							reservation_request.quantity = quantity
-							reservation_request.item_code = str(new_item_code)
-							reservation_request.status = "Reserved"
-							reservation_request.save()
+							print("Total items to be reserved: " + str(total))
 
-							notif_admin = Notification()
-							notif_admin.target = User.objects.get(is_staff=True)
-							notif_admin.maker = user
-							notif_admin.item = item
-							notif_admin.item_code = str(new_item_code)
-							notif_admin.message = buyer + " wants to buy the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + "). Item code is " + str(new_item_code) + "."
-							notif_admin.notification_type = "buy"
-							notif_admin.status = "unread"
-							notif_admin.save()
+							if total <= 3 and int(quantity) <= 3:
+								reservation_request = ReservationRequest()
 
-							notif_seller = Notification()
-							notif_seller.target = User.objects.get(username=item.owner.user.username)
-							notif_seller.maker = user
-							notif_seller.item = item
-							notif_seller.item_code = str(new_item_code)
-							notif_seller.message = buyer + " wants to buy your " + item.name + " with item code: " + str(new_item_code) + " (quantity = " + quantity + "). Expected payment is " + str(reservation_request.payment) + "."
-							notif_seller.notification_type = "buy"
-							notif_seller.status = "unread"
-							notif_seller.save()
+								if stars_to_use != "":
+									discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
+									reservation_request.stars_to_use = int(stars_to_use)
+									reservation_request.payment = discounted_price * quantity
 
-							code.item_code =  str(new_item_code)
-							code.save()
+									buyerProfile = UserProfile.objects.get(user=user)
+									buyerProfile.stars_collected = buyerProfile.stars_collected - int(stars_to_use)
+									buyerProfile.save()
 
-							response = {
-								'status': 201,
-								'statusText': 'Item reserved successfully',
-							}
+								else:
+									reservation_request.payment = item.price * float(quantity)
+
+								item.status = "Reserved"
+								item.quantity = item.quantity - int(quantity)
+								item.save()
+								
+								reservation_request.buyer = user
+								reservation_request.item = item
+								reservation_request.quantity = quantity
+								reservation_request.item_code = str(new_item_code)
+								reservation_request.status = "Reserved"
+								reservation_request.save()
+
+								notif_admin = Notification()
+								notif_admin.target = User.objects.get(is_staff=True)
+								notif_admin.maker = user
+								notif_admin.item = item
+								notif_admin.item_code = str(new_item_code)
+								notif_admin.message = buyer + " wants to buy the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + "). Item code is " + str(new_item_code) + "."
+								notif_admin.notification_type = "buy"
+								notif_admin.status = "unread"
+								notif_admin.save()
+
+								notif_seller = Notification()
+								notif_seller.target = User.objects.get(username=item.owner.user.username)
+								notif_seller.maker = user
+								notif_seller.item = item
+								notif_seller.item_code = str(new_item_code)
+								notif_seller.message = buyer + " wants to buy your " + item.name + " with item code: " + str(new_item_code) + " (quantity = " + quantity + "). Expected payment is " + str(reservation_request.payment) + "."
+								notif_seller.notification_type = "buy"
+								notif_seller.status = "unread"
+								notif_seller.save()
+
+								code.item_code =  str(new_item_code)
+								code.save()
+
+								response = {
+									'status': 201,
+									'statusText': 'Item reserved successfully',
+								}
+							else:
+								response = {
+								'status': 403,
+								'statusText': 'Reservation Failed. Maximum of 3 pieces of for sale items to be reserved.',
+								}
 						else:
 							response = {
 							'status': 403,
-							'statusText': 'Reservation Failed. Maximum of 3 pieces of for sale items to be reserved.',
+							'statusText': 'Not enough item quantity to buy or invalid quantity inputted',
 							}
 					else:
 						response = {
-						'status': 403,
-						'statusText': 'Not enough item quantity to buy or invalid quantity inputted',
+							'status': 404,
+							'statusText': 'Item does not exist',
 						}
-				else:
-					response = {
-						'status': 404,
-						'statusText': 'Item does not exist',
-					}
 			else:
 				response = {
 					'status': 404,
@@ -733,76 +783,84 @@ class RentItemView(View):
 		if renter and item_id and quantity:
 			user =  User.objects.get(username=renter)
 			if user is not None:
-				item = Item.objects.get(id=item_id)
-				if item is not None:
-					if item.quantity >= int(quantity) and int(quantity) > 0:
+				user_profile = UserProfile.objects.get(user=user)
+				if user_profile.status == "blocked":
+					response = {
+						'status': 403,
+						'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
+					}
+					return JsonResponse(response)
+				else: 
+					item = Item.objects.get(id=item_id)
+					if item is not None:
+						if item.quantity >= int(quantity) and int(quantity) > 0:
 
-						reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Rent").aggregate(Sum('quantity')).get('quantity__sum', 0)
-						print("Reserved items count (Rent): "+str(reserved_count))
+							reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Rent").aggregate(Sum('quantity')).get('quantity__sum', 0)
+							print("Reserved items count (Rent): "+str(reserved_count))
 
-						if reserved_count is None:
-							total = 0
-						else:
-							total = int(reserved_count) + int(quantity)
+							if reserved_count is None:
+								total = 0
+							else:
+								total = int(reserved_count) + int(quantity)
 
-						print("Total items to be reserved: " + str(total))
+							print("Total items to be reserved: " + str(total))
 
-						if total <= 3 and int(quantity) <= 3:
-							item.status = "Reserved"
-							item.quantity = item.quantity - int(quantity)
-							item.save()
+							if total <= 3 and int(quantity) <= 3:
+								item.status = "Reserved"
+								item.quantity = item.quantity - int(quantity)
+								item.save()
 
-							reservation_request = ReservationRequest()
-							reservation_request.buyer = user
-							reservation_request.item = item
-							reservation_request.quantity = quantity
-							reservation_request.payment = item.price * float(quantity)
-							reservation_request.item_code = str(new_item_code)
-							reservation_request.status = "Reserved"
-							reservation_request.save()
+								reservation_request = ReservationRequest()
+								reservation_request.buyer = user
+								reservation_request.item = item
+								reservation_request.quantity = quantity
+								reservation_request.payment = item.price * float(quantity)
+								reservation_request.item_code = str(new_item_code)
+								reservation_request.status = "Reserved"
+								reservation_request.save()
 
-							notif_admin = Notification()
-							notif_admin.target = User.objects.get(is_staff=True)
-							notif_admin.maker = user
-							notif_admin.item = item
-							notif_admin.item_code = str(new_item_code)
-							notif_admin.message = renter + " wants to rent the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
-							notif_admin.notification_type = "rent"
-							notif_admin.status = "unread"
-							notif_admin.save()
+								notif_admin = Notification()
+								notif_admin.target = User.objects.get(is_staff=True)
+								notif_admin.maker = user
+								notif_admin.item = item
+								notif_admin.item_code = str(new_item_code)
+								notif_admin.message = renter + " wants to rent the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
+								notif_admin.notification_type = "rent"
+								notif_admin.status = "unread"
+								notif_admin.save()
 
-							notif_seller = Notification()
-							notif_seller.target = User.objects.get(username=item.owner.user.username)
-							notif_seller.maker = user
-							notif_seller.item = item
-							notif_seller.item_code = str(new_item_code)
-							notif_seller.message = renter + " wants to rent your " + item.name + " with item code: " + str(new_item_code) + " (quantity = " + quantity + "). Expected payment is " + str(reservation_request.payment) + "."
-							notif_seller.notification_type = "rent"
-							notif_seller.status = "unread"
-							notif_seller.save()
+								notif_seller = Notification()
+								notif_seller.target = User.objects.get(username=item.owner.user.username)
+								notif_seller.maker = user
+								notif_seller.item = item
+								notif_seller.item_code = str(new_item_code)
+								notif_seller.message = renter + " wants to rent your " + item.name + " with item code: " + str(new_item_code) + " (quantity = " + quantity + "). Expected payment is " + str(reservation_request.payment) + "."
+								notif_seller.notification_type = "rent"
+								notif_seller.status = "unread"
+								notif_seller.save()
 
-							code.item_code =  str(new_item_code)
-							code.save()
+								code.item_code =  str(new_item_code)
+								code.save()
 
-							response = {
-								'status': 201,
-								'statusText': 'Item reserved successfully',
-							}
+								response = {
+									'status': 201,
+									'statusText': 'Item reserved successfully',
+								}
+							else:
+								response = {
+									'status': 403,
+									'statusText': 'Reservation Failed. Maximum of 3 pieces of for rent items to be reserved.'
+								}
 						else:
 							response = {
 								'status': 403,
-								'statusText': 'Reservation Failed. Maximum of 3 pieces of for rent items to be reserved.'
+								'statusText': 'Not enough item quantity to rent',
 							}
 					else:
 						response = {
-							'status': 403,
-							'statusText': 'Not enough item quantity to rent',
+							'status': 404,
+							'statusText': 'Item does not exist',
 						}
-				else:
-					response = {
-						'status': 404,
-						'statusText': 'Item does not exist',
-					}
 			else:
 				response = {
 					'status': 404,
@@ -834,13 +892,6 @@ class CancelReservedItemView(View):
 				item = Item.objects.get(id=item_id)
 				buyerProfile = UserProfile.objects.get(user=user)
 				reservation_request = ReservationRequest.objects.get(id=reservation_id)
-
-				'''if item.stars_to_use != 0:
-					buyerProfile.stars_collected = buyerProfile.stars_collected + item.stars_to_use
-					buyerProfile.save()
-				elif item.stars_required != 0:
-					buyerProfile.stars_collected = buyerProfile.stars_collected + item.stars_required
-					buyerProfile.save() '''
 
 				if reservation_request.stars_to_use != 0:
 					buyerProfile.stars_collected = buyerProfile.stars_collected + reservation_request.stars_to_use
@@ -911,7 +962,15 @@ class GetDonatedItemView(View):
 			if user is not None:
 				donee = UserProfile.objects.get(user=user)
 				item = Item.objects.get(id=item_id)
-				if item is not None:
+				if donee.status == "blocked":
+					response = {
+						'status': 403,
+						'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
+					}
+					return JsonResponse(response)
+
+
+				elif item is not None:
 					if item.quantity >= int(quantity) and int(quantity) > 0:
 						if donee.stars_collected >= (item.stars_required * int(quantity)):
 
