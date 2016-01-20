@@ -1519,6 +1519,14 @@ class ReturnRentedItemView(View):
 				transaction.save()
 
 				request.delete()
+				
+				expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now())
+				if expired_rented:
+					renter.status = "blocked"
+				else:
+					renter.status = "active"
+				renter.save()
+
 
 				response = {
 					'status': 200,
