@@ -120,7 +120,7 @@ class RentedItem(models.Model):
 
 
 class Transaction(models.Model):
-	transaction_type = models.CharField(max_length=10)
+	transaction_type = models.CharField(max_length=20)
 	item = models.ForeignKey(Item)
 	item_code = models.CharField(max_length=100, blank=True, null=True)
 	seller = models.ForeignKey(UserProfile,related_name="transactions_as_owner")

@@ -314,7 +314,7 @@ class SellItemView(View):
 				notif.maker = user
 				notif.item = item
 				notif.item_code = ""
-				notif.message = user.username + " wants to sell his/her " + item.name
+				notif.message = user.username + " wants to sell his/her " + item.name + "."
 				notif.notification_type = "sell"
 				notif.status = "unread"
 				notif.save()
@@ -396,7 +396,7 @@ class ForRentItemView(View):
 				notif.maker = user
 				notif.item = item
 				notif.item_code = ""
-				notif.message = user.username + " wants his/her " + item.name + " to be rented"
+				notif.message = user.username + " wants his/her " + item.name + " to be rented."
 				notif.notification_type = "for rent"
 				notif.status = "unread"
 				notif.save()
@@ -475,7 +475,7 @@ class DonateItemView(View):
 				notif.maker = user
 				notif.item = item
 				notif.item_code = ""
-				notif.message = user.username + " wants to donate his/her " + item.name
+				notif.message = user.username + " wants to donate his/her " + item.name + "."
 				notif.notification_type = "donate"
 				notif.status = "unread"
 				notif.save()
@@ -563,7 +563,7 @@ class EditItemView(View):
 			notif.maker = user
 			notif.item = item
 			notif.item_code = ""
-			notif.message = owner + " has edited the details of his/her " + item.name
+			notif.message = owner + " has edited the details of his/her " + item.name + "."
 			notif.notification_type = "edit" 
 			notif.status = "unread"
 			notif.save()
@@ -608,18 +608,25 @@ class DeleteItemView(View):
 					notif.maker = user
 					notif.item = item
 					notif.item_code = reservation.item_code
-					notif.message = "Your reserved item, " + item.name + "(" + reservation.item_code + ") has been deleted by the owner"
+					notif.message = "Your reserved item, " + item.name + ", with item code " + reservation.item_code + " has been deleted by the owner."
 					notif.notification_type = "delete"
 					notif.status = "unread"
 					notif.save()
 					reservation.delete()
 
 			elif item.status is "Pending":
-				if item.purpose == "Sell":
+				if item.purpose == "Sell" or item.purpose == "Rent":
 					request = ApprovalSellRequest.objects.get(item=item)
 				else:
 					request = ApprovalDonateRequest.objects.get(item=item)
 				request.delete()
+
+			if item.purpose == "Sell":
+				str_purpose = "for sale"
+			elif item.purpose == "Rent":
+				str_purpose = "for rent"
+			elif item.purpose == "Donate":
+				str_purpose = "donated"
 
 
 			notif = Notification()
@@ -627,7 +634,7 @@ class DeleteItemView(View):
 			notif.maker = user
 			notif.item = item
 			notif.item_code = ""
-			notif.message = owner + " has delete his/her " + item.name
+			notif.message = owner + " has deleted his/her " +  str_purpose + " item, " + item.name + "."
 			notif.notification_type = "delete"
 			notif.status = "unread"
 			notif.save()
@@ -674,7 +681,7 @@ class BuyItemView(View):
 						if item.quantity >= int(quantity) and int(quantity) > 0:
 
 							reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Sell").aggregate(Sum('quantity')).get('quantity__sum', 0)
-							print("Reserved items count (Sell): "+str(reserved_count))
+							print("Reserved items count (Sell): " + str(reserved_count))
 
 							if reserved_count is None:
 								total = 0
@@ -687,9 +694,17 @@ class BuyItemView(View):
 								reservation_request = ReservationRequest()
 
 								if stars_to_use != "":
+									if int(stars_to_use) == 50:
+										discount = "5%"
+									elif int(stars_to_use) == 100:
+										discount = "10%"
+									elif int(stars_to_use) == 150:
+										discount = "15%"
+
 									discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
 									reservation_request.stars_to_use = int(stars_to_use)
-									reservation_request.payment = discounted_price * quantity
+									reservation_request.payment = discounted_price * float(quantity)
+									message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is Php " + str(new_item_code) + ". Expected payment is " + format(reservation_request.payment,'.2f') + "."
 
 									buyerProfile = UserProfile.objects.get(user=user)
 									buyerProfile.stars_collected = buyerProfile.stars_collected - int(stars_to_use)
@@ -697,6 +712,8 @@ class BuyItemView(View):
 
 								else:
 									reservation_request.payment = item.price * float(quantity)
+									message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Expected payment is Php " + format(reservation_request.payment,'.2f') + "."
+
 
 								item.status = "Reserved"
 								item.quantity = item.quantity - int(quantity)
@@ -724,7 +741,7 @@ class BuyItemView(View):
 								notif_seller.maker = user
 								notif_seller.item = item
 								notif_seller.item_code = str(new_item_code)
-								notif_seller.message = buyer + " wants to buy your " + item.name + " with item code: " + str(new_item_code) + " (quantity = " + quantity + "). Expected payment is " + str(reservation_request.payment) + "."
+								notif_seller.message = message
 								notif_seller.notification_type = "buy"
 								notif_seller.status = "unread"
 								notif_seller.save()
@@ -824,7 +841,7 @@ class RentItemView(View):
 								notif_admin.maker = user
 								notif_admin.item = item
 								notif_admin.item_code = str(new_item_code)
-								notif_admin.message = renter + " wants to rent the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
+								notif_admin.message = renter + " wants to rent the " + item.name + " owned by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
 								notif_admin.notification_type = "rent"
 								notif_admin.status = "unread"
 								notif_admin.save()
@@ -834,7 +851,7 @@ class RentItemView(View):
 								notif_seller.maker = user
 								notif_seller.item = item
 								notif_seller.item_code = str(new_item_code)
-								notif_seller.message = renter + " wants to rent your " + item.name + " with item code: " + str(new_item_code) + " (quantity = " + quantity + "). Expected payment is " + str(reservation_request.payment) + "."
+								notif_seller.message = renter + " wants to rent your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Expected payment is Php " + str(reservation_request.payment) + "."
 								notif_seller.notification_type = "rent"
 								notif_seller.status = "unread"
 								notif_seller.save()
@@ -897,10 +914,30 @@ class CancelReservedItemView(View):
 					buyerProfile.stars_collected = buyerProfile.stars_collected + reservation_request.stars_to_use
 					buyerProfile.save()
 
+				if item.purpose == "Sell":
+					str_purpose = "for sale"
+				elif item.purpose == "Rent":
+					str_purpose = "for rent"
+				elif item.purpose == "Donate":
+					str_purpose = "donated"
+
 				item.stars_to_use = 0
 				item.quantity = item.quantity + reservation_request.quantity
 				item.status = "Available"
 				item.save()
+
+# owner of donated item will not be notified anymore
+				if item.purpose == "Sell" or item.purpose == "Rent":
+					notif_seller = Notification()
+					notif_seller.target = User.objects.get(username=item.owner.user.username)
+					notif_seller.maker = user
+					notif_seller.item = item
+					notif_admin.item_code = reservation_request.item_code
+					notif_seller.message = buyer + " has canceled his/her reservation for your " + str_purpose  + " item, " + item.name + " with item_code " + reservation_request.item_code + ". You may now get your item at the TBS admin's office."
+					notif_seller.notification_type = "cancel"
+					notif_seller.status = "unread"
+					notif_seller.save()
+
 
 				notif_admin = Notification()
 				notif_admin.target = User.objects.get(is_staff=True)
@@ -911,16 +948,6 @@ class CancelReservedItemView(View):
 				notif_admin.notification_type = "cancel"
 				notif_admin.status = "unread"
 				notif_admin.save()
-
-				notif_seller = Notification()
-				notif_seller.target = User.objects.get(username=item.owner.user.username)
-				notif_seller.maker = user
-				notif_seller.item = item
-				notif_admin.item_code = reservation_request.item_code
-				notif_seller.message = buyer + " has canceled his/her reservation for " + item.name + " with item_code " + reservation_request.item_code
-				notif_seller.notification_type = "cancel"
-				notif_seller.status = "unread"
-				notif_seller.save()
 
 				reservation_request.delete()
 
@@ -1010,7 +1037,8 @@ class GetDonatedItemView(View):
 								notif_admin.status = "unread"
 								notif_admin.save()
 
-								notif_seller = Notification()
+								#kay inig donate sa item kay sa admin na mn dritso ang item. wa nay labot ang owner sa iyang item after niya mahatag sa admin
+								'''notif_seller = Notification()
 								notif_seller.target = User.objects.get(username=item.owner.user.username)
 								notif_seller.maker = user
 								notif_seller.item = item
@@ -1018,7 +1046,7 @@ class GetDonatedItemView(View):
 								notif_seller.message = buyer + " wants to get your donated item " + item.name + " with item code " + str(new_item_code) + " (quantity = " + quantity + ")."
 								notif_seller.notification_type = "get"
 								notif_seller.status = "unread"
-								notif_seller.save()
+								notif_seller.save()''' 
 
 								code.item_code =  str(new_item_code)
 								code.save()
@@ -1087,6 +1115,11 @@ class AdminApproveItemView(View):
 			item = Item.objects.get(id=item_id, status="Pending")
 			request = ApprovalSellRequest.objects.get(id=request_id)
 
+			if item.purpose == "Sell":
+				str_purpose = "for sale"
+			elif item.purpose == "Rent":
+				str_purpose = "for rent"
+
 			if(item or request) is None:
 				response = {
 					'status': 404,
@@ -1108,7 +1141,7 @@ class AdminApproveItemView(View):
 				notif.maker = maker
 				notif.item = item
 				notif.item_code = ""
-				notif.message = "Admin approves your item " + item.name
+				notif.message = "Admin approves your " + str_purpose + " item " + item.name + "."
 				notif.notification_type = "approve"
 				notif.status = "unread"
 				notif.save()
@@ -1130,6 +1163,7 @@ class AdminDisapproveItemView(View):
 		request_id = request.POST.get('request_id',None)
 		status = 'Disapproved'
 
+
 		if (item_id or request_id) is None:
 			response = {
 				'status': 404,
@@ -1139,6 +1173,11 @@ class AdminDisapproveItemView(View):
 		else:
 			item = Item.objects.get(id=item_id, status="Pending")
 			request = ApprovalSellRequest.objects.get(id=request_id)
+
+			if item.purpose == "Sell":
+				str_purpose = "for sale"
+			elif item.purpose == "Rent":
+				str_purpose = "for rent"
 
 			if (item or request) is None:
 				response = {
@@ -1159,7 +1198,7 @@ class AdminDisapproveItemView(View):
 				notif.maker = maker
 				notif.item = item
 				notif.item_code = ""
-				notif.message = "Admin disapproves your item " + item.name
+				notif.message = "Admin disapproves your " + str_purpose + " item, " + item.name + "."
 				notif.notification_type = "disapprove"
 				notif.status = "unread"
 				notif.save()
@@ -1237,12 +1276,18 @@ class ReservedItemAvailableView(View):
 				target = User.objects.get(username=request.buyer.username)
 				maker = User.objects.get(is_staff=True)
 
+				if item.purpose == "Sell" or item.purpose == "Rent":
+					message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office. Don't forget to bring the payment for the item in the amount of Php " + format(reservation_request.payment,'.2f') + "."
+				elif item.purpose == "Donate":
+					message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office."
+
+
 				notif = Notification()
 				notif.target = target
 				notif.maker = maker
 				notif.item = item
 				notif.item_code = request.item_code
-				notif.message = "Your reserved item, " + item.name + " with item code " + request.item_code + " is now available "
+				notif.message = message
 				notif.notification_type = "Available"
 				notif.status = "unread"
 				notif.save()
@@ -1292,34 +1337,44 @@ class ReservedItemClaimedView(View):
 				target = User.objects.get(username=item.owner.user.username)
 				maker = User.objects.get(is_staff=True)
 
-				notif = Notification()
-				notif.target = target
-				notif.maker = maker
-				notif.item = item
-				notif.item_code = request.item_code
-				notif.message = "Your item, " + item.name + " with item code " + request.item_code +" has been claimed."
-				notif.notification_type = "sold"
-				notif.status = "unread"
-				notif.save()
-
 				buyer = UserProfile.objects.get(user=request.buyer)
 				stars_to_add = 0
 				stars_to_add = int((item.price*0.1)*request.quantity)
 
-				if item.purpose == 'Sell':
-					if request.stars_to_use == 0:
+				if item.purpose == "Sell" or item.purpose == "Rent":
+					if item.purpose == 'Sell':
+						str_purpose = "for sale"
+						transaction_type = "Buy"
+						if request.stars_to_use == 0:
+							buyer.stars_collected = buyer.stars_collected + stars_to_add
+							buyer.save()
+
+					elif item.purpose == 'Rent':
+						str_purpose = "for rent"
+						transaction_type = "Rent"
 						buyer.stars_collected = buyer.stars_collected + stars_to_add
 						buyer.save()
 
-				elif item.purpose == 'Rent':
-					buyer.stars_collected = buyer.stars_collected + stars_to_add
-					buyer.save()
+# only owners of for sale and for rent items are notified if their item was claimed
+					notif = Notification()
+					notif.target = target
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = request.item_code
+					notif.message = "Your " + str_purpose + " item, " + item.name + " with item code " + request.item_code + " has been claimed. You may now claim your payment at the TBS admin's office."
+					notif.notification_type = "sold"
+					notif.status = "unread"
+					notif.save()
 
-				owner = UserProfile.objects.get(user=target)
-				owner.stars_collected = owner.stars_collected + stars_to_add
-				owner.save()
+# only for rent and for sale item owners are given stars if item is claimed
+					owner = UserProfile.objects.get(user=target)
+					owner.stars_collected = owner.stars_collected + stars_to_add
+					owner.save()
+				else:
+					transaction_type = "Get Donation"
 
 
+# for recording of rented items
 				expiry = datetime.now() + timedelta(days=item.rent_duration)
 
 				if item.purpose == 'Rent':
@@ -1332,8 +1387,20 @@ class ReservedItemClaimedView(View):
 					rentedItem.rent_expiration = expiry
 					rentedItem.penalty = 0
 					rentedItem.save()
+
+					notif = Notification()
+					notif.target = request.buyer
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = request.item_code
+					notif.message = "You have successfully rented the item, " + item.name + ". Please return it on or before " + expiry.strftime("%Y-%m-%d %H:%M:%S") + " to avoid penalty." 
+					notif.notification_type = "sold"
+					notif.status = "unread"
+					notif.save()
 					
+
 				transaction = Transaction()
+				transaction.transaction_type = transaction_type
 				transaction.item = item
 				transaction.seller = owner
 				transaction.buyer = buyer
@@ -1396,7 +1463,7 @@ class AdminApproveDonationView(View):
 				notif.maker = maker
 				notif.item = item
 				notif.item_code = ""
-				notif.message = "Admin approves your donated item: " + item.name
+				notif.message = "Admin approves your donated item, " + item.name + "."
 				notif.notification_type = "approve"
 				notif.status = "unread"
 				notif.save()
@@ -1449,7 +1516,7 @@ class AdminDisapproveDonationView(View):
 				notif.maker = maker
 				notif.item = item
 				notif.item_code = ""
-				notif.message = "Admin disapproves your donated item: " + item.name
+				notif.message = "Admin disapproves your donated item, " + item.name + "."
 				notif.notification_type = "disapprove"
 				notif.status = "unread"
 				notif.save()
@@ -1491,26 +1558,30 @@ class ReturnRentedItemView(View):
 				return JsonResponse(response)
 			else:
 				renter = UserProfile.objects.get(user=request.renter)
+				target = User.objects.get(username=item.owner.user.username)
+				maker = User.objects.get(is_staff=True)
+
+				if request.penalty == 0:
+					message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it at the TBS admin's office."
+				else:
+					message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it, with the penalty payment of Php " + format(request.penalty,'.2f') + " at the TBS admin's office."
 
 				item.status = status
 				item.quantity = item.quantity + request.quantity
 				item.save()
-
-
-				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(is_staff=True)
 
 				notif = Notification()
 				notif.target = target
 				notif.maker = maker
 				notif.item = item
 				notif.item_code = request.item_code
-				notif.message = "Your item, " + item.name + " with item code " + request.item_code +" has been returned by the renter."
+				notif.message = message
 				notif.notification_type = "sold"
 				notif.status = "unread"
 				notif.save()
 
 				transaction = Transaction()
+				transaction.transaction_type = "Return Rented"
 				transaction.item = item
 				transaction.item_code = request.item_code
 				transaction.seller = item.owner
@@ -1525,6 +1596,7 @@ class ReturnRentedItemView(View):
 					renter.status = "blocked"
 				else:
 					renter.status = "active"
+
 				renter.save()
 
 
@@ -1659,7 +1731,7 @@ class CheckExpirationView(View):
 				notif.maker = admin
 				notif.item = reservation.item
 				notif.item_code = reservation.item_code
-				notif.message = "Your reserved item, " + reservation.item.name + ", with item code " + reservation.item_code + " has expired. It was not given by the seller."
+				notif.message = "Your reserved item, " + reservation.item.name + ", with item code " + reservation.item_code + " has expired. It was not given by the owner."
 				notif.notification_type = "expired"
 				notif.status = "unread"
 				notif.save()
@@ -1674,26 +1746,70 @@ class CheckExpirationView(View):
 				reserved_item.quantity = reserved_item.quantity + reservation.quantity
 				reserved_item.save()
 
+# owner of donated item will not be notified that his item was not claimed
+				if reserved_item.purpose == "Sell" or reserved_item.purpose == "Rent":
+					notif = Notification()
+					notif.target = reservation.item.owner.user
+					notif.maker = admin
+					notif.item = reservation.item
+					notif.item_code = reservation.item_code
+					notif.message = "Your item, " + reservation.item.name + ", with item code " + reservation.item_code + " was not claimed. You may get your item at the TBS admin's office."
+					notif.notification_type = "expired"
+					notif.status = "unread"
+					notif.save()
+
+
 				notif = Notification()
 				notif.target = reservation.buyer
 				notif.maker = admin
 				notif.item = reservation.item
 				notif.item_code = reservation.item_code
-				notif.message = "Your reserved item, " + reservation.item.name + ", with item code " + reservation.item_code + " has expired. You were not able to claim the item within 3 days after it was given by the seller."
+				notif.message = "Your reserved item, " + reservation.item.name + ", with item code " + reservation.item_code + " has expired. You were not able to claim the item within 3 days after it was given by the owner."
 				notif.notification_type = "expired"
 				notif.status = "unread"
 				notif.save()
 
+				
+				reservation.delete()
+
+			#for items on queue
+			items_on_queue = ApprovalSellRequest.objects.filter(seller=user, request_expiration__lte = datetime.now())
+			for item_on_queue in items_on_queue:
+				print("Queued Item: " + str(item_on_queue.id))
+
+				if item_on_queue.item.purpose == "Rent":
+					str_purpose = "for rent"
+				elif item_on_queue.item.purpose == "Sell":
+					str_purpose = "for sale"
+
 				notif = Notification()
-				notif.target = reservation.item.owner.user
+				notif.target = item_on_queue.seller
 				notif.maker = admin
-				notif.item = reservation.item
-				notif.item_code = reservation.item_code
-				notif.message = "Your item, " + reservation.item.name + ", with item code " + reservation.item_code + " was not claimed. You may get your item at the TBS admin's office."
+				notif.item = item_on_queue.item
+				notif.item_code = item_on_queue.item_code
+				notif.message = "Your " + str_purpose + " item, " + item_on_queue.item.name + " has expired. You were not able to show it to the admin for its approval."
 				notif.notification_type = "expired"
 				notif.status = "unread"
 				notif.save()
-				reservation.delete()
+				item_on_queue.delete()
+
+
+			#for donated items
+			donated_items = ApprovalDonateRequest.objects.filter(donor=user, request_expiration__lte = datetime.now())
+			for donated_item in donated_items:
+				print("Donated Item: " + str(donated_item.id))
+
+				notif = Notification()
+				notif.target = donated_item.donor
+				notif.maker = admin
+				notif.item = donated_item.item
+				notif.item_code = donated_item.item_code
+				notif.message = "Your donated item, " + donated_item.item.name + " has expired. You were not able to show it to the admin for its approval."
+				notif.notification_type = "expired"
+				notif.status = "unread"
+				notif.save()
+				donated_item.delete()
+
 
 			#for rented items -->
 			rented_items = RentedItem.objects.filter(renter=user, rent_expiration__lte = (datetime.now() + timedelta(days=1)))
@@ -1711,7 +1827,7 @@ class CheckExpirationView(View):
 						notif.maker = admin
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
-						notif.message = "You only have " + str(hours_before) + " hours to return your rented item, " + rented_item.item.name + ", with item code " + rented_item.item_code + ". Please return it on or before " + str(rented_item.rent_expiration) + " to avoid penalty."
+						notif.message = "You only have " + str(hours_before) + " hours to return your rented item, " + rented_item.item.name + ", with item code " + rented_item.item_code + ". Please return it on or before " + rented_item.rent_expiration.strftime("%Y-%m-%d %H:%M:%S") + " to avoid penalty."
 						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
@@ -1732,7 +1848,7 @@ class CheckExpirationView(View):
 						notif.maker = admin
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
-						notif.message = "Your rented item, " + rented_item.item.name + " with item code, " + rented_item.item_code +" has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
+						notif.message = "Your rented item, " + rented_item.item.name + " with item code, " + rented_item.item_code +" has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
 						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
@@ -1756,7 +1872,7 @@ class CheckExpirationView(View):
 							notif.maker = admin
 							notif.item = rented_item.item
 							notif.item_code = rented_item.item_code
-							notif.message = "Your rented item, " + rented_item.item.name + " with item code, " + rented_item.item_code +" has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
+							notif.message = "Your rented item, " + rented_item.item.name + " with item code, " + rented_item.item_code +" has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
 							notif.notification_type = "rentedItem"
 							notif.status = "unread"
 							notif.save()
@@ -1852,6 +1968,18 @@ class AdminCheckExpirationView(View):
 			reserved_item.quantity = reserved_item.quantity + reservation.quantity
 			reserved_item.save()
 
+# owner of donated item will not be notified that his item was not claimed
+			if reserved_item.purpose == "Sell" or reserved_item.purpose == "Rent":
+				notif = Notification()
+				notif.target = reservation.item.owner.user
+				notif.maker = admin
+				notif.item = reservation.item
+				notif.item_code = reservation.item_code
+				notif.message = "Your item, " + reservation.item.name + ", with item code " + reservation.item_code + " was not claimed. You may get your item at the TBS admin's office."
+				notif.notification_type = "expired"
+				notif.status = "unread"
+				notif.save()
+
 			notif = Notification()
 			notif.target = reservation.buyer
 			notif.maker = admin
@@ -1862,16 +1990,48 @@ class AdminCheckExpirationView(View):
 			notif.status = "unread"
 			notif.save()
 
+			
+			reservation.delete()
+
+
+		#for items on queue
+		items_on_queue = ApprovalSellRequest.objects.filter(request_expiration__lte = datetime.now())
+		for item_on_queue in items_on_queue:
+			print("Queued Item: " + str(item_on_queue.id))
+
+			if item_on_queue.item.purpose == "Rent":
+				str_purpose = "for rent"
+			elif item_on_queue.item.purpose == "Sell":
+				str_purpose = "for sale"
+
 			notif = Notification()
-			notif.target = reservation.item.owner.user
+			notif.target = item_on_queue.seller
 			notif.maker = admin
-			notif.item = reservation.item
-			notif.item_code = reservation.item_code
-			notif.message = "Your item, " + reservation.item.name + ", with item code " + reservation.item_code + " was not claimed. You may get your item at the TBS admin's office."
+			notif.item = item_on_queue.item
+			notif.item_code = item_on_queue.item_code
+			notif.message = "Your " + str_purpose + " item, " + item_on_queue.item.name + " has expired. You were not able to show it to the admin for its approval."
 			notif.notification_type = "expired"
 			notif.status = "unread"
 			notif.save()
-			reservation.delete()
+			item_on_queue.delete()
+
+
+		#for donated items
+		donated_items = ApprovalDonateRequest.objects.filter(request_expiration__lte = datetime.now())
+		for donated_item in donated_items:
+			print("Donated Item: " + str(donated_item.id))
+
+			notif = Notification()
+			notif.target = donated_item.donor
+			notif.maker = admin
+			notif.item = donated_item.item
+			notif.item_code = donated_item.item_code
+			notif.message = "Your donated item, " + donated_item.item.name + " has expired. You were not able to show it to the admin for its approval."
+			notif.notification_type = "expired"
+			notif.status = "unread"
+			notif.save()
+			donated_item.delete()
+
 
 		#for rented items -->
 		rented_items = RentedItem.objects.filter(rent_expiration__lte = (datetime.now() + timedelta(days=1)))
@@ -1891,7 +2051,7 @@ class AdminCheckExpirationView(View):
 					notif.maker = admin
 					notif.item = rented_item.item
 					notif.item_code = rented_item.item_code
-					notif.message = "You only have " + str(hours_before) + " hours to return your rented item, " + rented_item.item.name + ", with item code " + rented_item.item_code + ". Please return it on or before " + str(rented_item.rent_expiration) + " to avoid penalty."
+					notif.message = "You only have " + str(hours_before) + " hours to return your rented item, " + rented_item.item.name + ", with item code " + rented_item.item_code + ". Please return it on or before " + rented_item.rent_expiration.strftime("%Y-%m-%d %H:%M:%S") + " to avoid penalty."
 					notif.notification_type = "rentedItem"
 					notif.status = "unread"
 					notif.save()
@@ -1912,7 +2072,7 @@ class AdminCheckExpirationView(View):
 					notif.maker = admin
 					notif.item = rented_item.item
 					notif.item_code = rented_item.item_code
-					notif.message = "Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
+					notif.message = "Your rented item " + rented_item.item.item_name +" has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
 					notif.notification_type = "rentedItem"
 					notif.status = "unread"
 					notif.save()
@@ -1936,7 +2096,7 @@ class AdminCheckExpirationView(View):
 						notif.maker = admin
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
-						notif.message = "Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid greater penalty."
+						notif.message = "Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
 						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
