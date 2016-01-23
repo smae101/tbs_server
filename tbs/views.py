@@ -1786,7 +1786,6 @@ class CheckExpirationView(View):
 				notif.target = item_on_queue.seller
 				notif.maker = admin
 				notif.item = item_on_queue.item
-				notif.item_code = item_on_queue.item_code
 				notif.message = "Your " + str_purpose + " item, " + item_on_queue.item.name + " has expired. You were not able to show it to the admin for its approval."
 				notif.notification_type = "expired"
 				notif.status = "unread"
@@ -1803,7 +1802,6 @@ class CheckExpirationView(View):
 				notif.target = donated_item.donor
 				notif.maker = admin
 				notif.item = donated_item.item
-				notif.item_code = donated_item.item_code
 				notif.message = "Your donated item, " + donated_item.item.name + " has expired. You were not able to show it to the admin for its approval."
 				notif.notification_type = "expired"
 				notif.status = "unread"
@@ -2008,7 +2006,6 @@ class AdminCheckExpirationView(View):
 			notif.target = item_on_queue.seller
 			notif.maker = admin
 			notif.item = item_on_queue.item
-			notif.item_code = item_on_queue.item_code
 			notif.message = "Your " + str_purpose + " item, " + item_on_queue.item.name + " has expired. You were not able to show it to the admin for its approval."
 			notif.notification_type = "expired"
 			notif.status = "unread"
@@ -2025,7 +2022,6 @@ class AdminCheckExpirationView(View):
 			notif.target = donated_item.donor
 			notif.maker = admin
 			notif.item = donated_item.item
-			notif.item_code = donated_item.item_code
 			notif.message = "Your donated item, " + donated_item.item.name + " has expired. You were not able to show it to the admin for its approval."
 			notif.notification_type = "expired"
 			notif.status = "unread"
