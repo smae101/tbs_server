@@ -11,7 +11,7 @@ from django.views.generic import View
 
 from rest_framework.parsers import JSONParser
 
-from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest, RentedItem, ItemCode
+from .models import UserProfile, Student, Notification, Transaction, ApprovalSellRequest, ApprovalDonateRequest, Item, Category, ReservationRequest, RentedItem, ItemCode, Rate
 
 from datetime import datetime
 
@@ -600,12 +600,12 @@ class DeleteItemView(View):
 
 			admin = User.objects.get(is_staff=True)
 			
-			if item.status is "Reserved":
+			if item.status != "Pending":
 				reservation_requests = ReservationRequest.objects.filter(item=item)
 				for reservation in reservation_requests:
 					notif = Notification()
 					notif.target = reservation.buyer
-					notif.maker = user
+					notif.maker = admin
 					notif.item = item
 					notif.item_code = reservation.item_code
 					notif.message = "Your reserved item, " + item.name + ", with item code " + reservation.item_code + " has been deleted by the owner."
@@ -614,7 +614,7 @@ class DeleteItemView(View):
 					notif.save()
 					reservation.delete()
 
-			elif item.status is "Pending":
+			elif item.status == "Pending":
 				if item.purpose == "Sell" or item.purpose == "Rent":
 					request = ApprovalSellRequest.objects.get(item=item)
 				else:
@@ -677,6 +677,7 @@ class BuyItemView(View):
 
 				else: 
 					item = Item.objects.get(id=item_id)
+					rates = Rate.objects.get(id=1)
 					if item is not None:
 						if item.quantity >= int(quantity) and int(quantity) > 0:
 
@@ -704,7 +705,8 @@ class BuyItemView(View):
 									discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
 									reservation_request.stars_to_use = int(stars_to_use)
 									reservation_request.payment = discounted_price * float(quantity)
-									message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is Php " + str(new_item_code) + ". Expected payment is " + format(reservation_request.payment,'.2f') + "."
+									user_share = (discounted_price * float(quantity)) * float(rates.user_share/100)
+									message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
 
 									buyerProfile = UserProfile.objects.get(user=user)
 									buyerProfile.stars_collected = buyerProfile.stars_collected - int(stars_to_use)
@@ -712,11 +714,13 @@ class BuyItemView(View):
 
 								else:
 									reservation_request.payment = item.price * float(quantity)
-									message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Expected payment is Php " + format(reservation_request.payment,'.2f') + "."
+									user_share = (item.price * float(quantity)) * float(rates.user_share/100)
+									message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
 
 
 								item.status = "Reserved"
 								item.quantity = item.quantity - int(quantity)
+								item.reserved_quantity = item.reserved_quantity + int(quantity)
 								item.save()
 								
 								reservation_request.buyer = user
@@ -809,6 +813,7 @@ class RentItemView(View):
 					return JsonResponse(response)
 				else: 
 					item = Item.objects.get(id=item_id)
+					rates = Rate.objects.get(id=1)
 					if item is not None:
 						if item.quantity >= int(quantity) and int(quantity) > 0:
 
@@ -823,8 +828,11 @@ class RentItemView(View):
 							print("Total items to be reserved: " + str(total))
 
 							if total <= 3 and int(quantity) <= 3:
+								user_share = (item.price * float(quantity)) * float(rates.user_share/100)
+
 								item.status = "Reserved"
 								item.quantity = item.quantity - int(quantity)
+								item.reserved_quantity = item.reserved_quantity + int(quantity)
 								item.save()
 
 								reservation_request = ReservationRequest()
@@ -841,7 +849,7 @@ class RentItemView(View):
 								notif_admin.maker = user
 								notif_admin.item = item
 								notif_admin.item_code = str(new_item_code)
-								notif_admin.message = renter + " wants to rent the " + item.name + " owned by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
+								notif_admin.message = renter + " wants to rent the " + item.name + " owned by " + item.owner.user.username + " (quantity = " + quantity + "). Item code is " + str(new_item_code) + "."
 								notif_admin.notification_type = "rent"
 								notif_admin.status = "unread"
 								notif_admin.save()
@@ -851,7 +859,7 @@ class RentItemView(View):
 								notif_seller.maker = user
 								notif_seller.item = item
 								notif_seller.item_code = str(new_item_code)
-								notif_seller.message = renter + " wants to rent your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Expected payment is Php " + str(reservation_request.payment) + "."
+								notif_seller.message = renter + " wants to rent your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
 								notif_seller.notification_type = "rent"
 								notif_seller.status = "unread"
 								notif_seller.save()
@@ -923,6 +931,7 @@ class CancelReservedItemView(View):
 
 				item.stars_to_use = 0
 				item.quantity = item.quantity + reservation_request.quantity
+				item.reserved_quantity = item.reserved_quantity - int(quantity)
 				item.status = "Available"
 				item.save()
 
@@ -1014,6 +1023,7 @@ class GetDonatedItemView(View):
 							if total <= 3 and int(quantity) <= 3:
 								item.status = "Reserved"
 								item.quantity = item.quantity - int(quantity)
+								item.reserved_quantity = item.reserved_quantity + int(quantity)
 								item.save()
 								
 								donee.stars_collected = donee.stars_collected - (item.stars_required * int(quantity))
@@ -1277,7 +1287,7 @@ class ReservedItemAvailableView(View):
 				maker = User.objects.get(is_staff=True)
 
 				if item.purpose == "Sell" or item.purpose == "Rent":
-					message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office. Don't forget to bring the payment for the item in the amount of Php " + format(reservation_request.payment,'.2f') + "."
+					message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office. Don't forget to bring the payment for the item in the amount of Php " + format(request.payment,'.2f') + "."
 				elif item.purpose == "Donate":
 					message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office."
 
@@ -1322,6 +1332,7 @@ class ReservedItemClaimedView(View):
 		else:
 			request = ReservationRequest.objects.get(id=request_id,status="Available")
 			item = Item.objects.get(id=item_id)
+			rates = Rate.objects.get(id=1)
 
 			if(item or request) is None:
 				response = {
@@ -1331,15 +1342,21 @@ class ReservedItemClaimedView(View):
 				return JsonResponse(response)
 			else:
 				item.status = status
+				item.reserved_quantity = item.reserved_quantity - request.quantity
 				item.save()
 
 
 				target = User.objects.get(username=item.owner.user.username)
 				maker = User.objects.get(is_staff=True)
-
 				buyer = UserProfile.objects.get(user=request.buyer)
+				rates = Rate.objects.get(id=1)
+
+				user_share = request.payment * float(rates.user_share/100)
+				tbs_share = request.payment * float(rates.tbs_share/100)
+
+				rate_stars_to_add = rates.rate_of_added_stars_based_on_price/100
 				stars_to_add = 0
-				stars_to_add = int((item.price*0.1)*request.quantity)
+				stars_to_add = int((item.price*rate_stars_to_add)*request.quantity)
 
 				if item.purpose == "Sell" or item.purpose == "Rent":
 					if item.purpose == 'Sell':
@@ -1361,7 +1378,7 @@ class ReservedItemClaimedView(View):
 					notif.maker = maker
 					notif.item = item
 					notif.item_code = request.item_code
-					notif.message = "Your " + str_purpose + " item, " + item.name + " with item code " + request.item_code + " has been claimed. You may now claim your payment at the TBS admin's office."
+					notif.message = "Your " + str_purpose + " item, " + item.name + " with item code " + request.item_code + " has been claimed. You may now claim your share of the total payment in the amount of " + format(user_share,'.2f') + " at the TBS admin's office."
 					notif.notification_type = "sold"
 					notif.status = "unread"
 					notif.save()
@@ -1406,6 +1423,9 @@ class ReservedItemClaimedView(View):
 				transaction.buyer = buyer
 				transaction.date_claimed = datetime.now()
 				transaction.item_code = request.item_code
+				transaction.total_payment = request.payment
+				transaction.tbs_share = tbs_share
+				transaction.user_share = user_share
 				transaction.save()
 
 				request.delete()
@@ -1438,7 +1458,8 @@ class AdminApproveDonationView(View):
 			return JsonResponse(response)
 		else:
 			item = Item.objects.get(id=item_id, status="Pending")
-			owner = item.owner
+			rates = Rate.objects.get(id=1)
+			owner = UserProfile.objects.get(user=item.owner.user)
 			request = ApprovalDonateRequest.objects.get(id=request_id)
 
 			if(item or request) is None:
@@ -1449,11 +1470,14 @@ class AdminApproveDonationView(View):
 				return JsonResponse(response)
 			else:
 				category = Category.objects.get(category_name=cat)
+
 				item.status = status
 				item.date_approved = datetime.now()
 				item.stars_required = stars
 				item.category = category
 				item.save()
+
+				stars_to_add = float(item.stars_required) * (rates.rate_of_added_stars_based_on_stars_required/100)
 
 				target = User.objects.get(username=item.owner.user.username)
 				maker = User.objects.get(username="admin")
@@ -1468,7 +1492,7 @@ class AdminApproveDonationView(View):
 				notif.status = "unread"
 				notif.save()
 
-				owner.stars_collected = owner.stars_collected + int(float(item.stars_required) * 0.2)
+				owner.stars_collected = owner.stars_collected + (int(stars_to_add) * item.quantity)
 				owner.save()
 
 				request.delete()
@@ -1560,11 +1584,17 @@ class ReturnRentedItemView(View):
 				renter = UserProfile.objects.get(user=request.renter)
 				target = User.objects.get(username=item.owner.user.username)
 				maker = User.objects.get(is_staff=True)
+				rates = Rate.objects.get(id=1)
+
+				user_share = 0
+				tbs_share = 0
 
 				if request.penalty == 0:
 					message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it at the TBS admin's office."
 				else:
-					message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it, with the penalty payment of Php " + format(request.penalty,'.2f') + " at the TBS admin's office."
+					user_share = request.penalty * float(rates.user_share/100)
+					tbs_share = request.penalty * float(rates.tbs_share/100)
+					message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it, with your share of the penalty payment in the amount of Php " + format(user_share,'.2f') + " at the TBS admin's office."
 
 				item.status = status
 				item.quantity = item.quantity + request.quantity
@@ -1587,6 +1617,9 @@ class ReturnRentedItemView(View):
 				transaction.seller = item.owner
 				transaction.buyer = renter
 				transaction.date_claimed = datetime.now()
+				transaction.total_payment = request.penalty
+				transaction.user_share = user_share
+				transaction.tbs_share = tbs_share
 				transaction.save()
 
 				request.delete()
@@ -1717,6 +1750,10 @@ class CheckExpirationView(View):
 			user = User.objects.get(username=username)
 			admin = User.objects.get(is_staff=True)
 			userProfile = UserProfile.objects.get(user=user)
+			rates = Rate.objects.get(id=1)
+
+			penalty_rate_per_day = rates.penalty_rate_per_day/100
+
 			print("Checking expiration")
 			#for reserved items
 			reservation_request = ReservationRequest.objects.filter(buyer=user, request_expiration__lte = datetime.now(), status="Reserved")
@@ -1860,7 +1897,7 @@ class CheckExpirationView(View):
 						print("expired after an hour or more")
 						payment = rented_item.item.price * rented_item.quantity
 						if rented_item.notified == 2 or rented_item.notified == 3:
-							rented_item.penalty = ((payment * 0.1)/24)*hours_after
+							rented_item.penalty = ((payment * penalty_rate_per_day)/24)*hours_after
 							rented_item.save()
 
 							print("For computation of penalty: " + str(rented_item.penalty) + ", hours = " + str(hours_after))
@@ -1876,14 +1913,14 @@ class CheckExpirationView(View):
 							notif.save()
 
 							rented_item.notified = 2
-							rented_item.penalty = ((payment * 0.1)/24)*hours_after
+							rented_item.penalty = ((payment * penalty_rate_per_day)/24)*hours_after
 							rented_item.save()
 
 							print("For notifications and computation of penalty: " + str(rented_item.penalty) + ", hours = " + str(hours_after))
 						
 
 						#for blocking a user
-						blocked_date = rented_item.rent_expiration + timedelta(days=14)
+						blocked_date = rented_item.rent_expiration + timedelta(days=15)
 						if datetime.now() < blocked_date:
 
 							print("now: " + str(datetime.now()))
@@ -2028,7 +2065,6 @@ class AdminCheckExpirationView(View):
 			notif.save()
 			donated_item.delete()
 
-
 		#for rented items -->
 		rented_items = RentedItem.objects.filter(rent_expiration__lte = (datetime.now() + timedelta(days=1)))
 		for rented_item in rented_items:
@@ -2082,7 +2118,7 @@ class AdminCheckExpirationView(View):
 					print("expired after an hour or more")
 					payment = rented_item.item.price * rented_item.quantity
 					if rented_item.notified == 2 or rented_item.notified == 3: #compute for the penalty only, no notification
-						rented_item.penalty = ((payment * 0.1)/24)*hours_after
+						rented_item.penalty = ((payment * penalty_rate_per_day)/24)*hours_after
 						rented_item.save()
 
 						print("For computation of penalty: " + str(rented_item.penalty) + ", hours = " + str(hours_after))
@@ -2098,14 +2134,14 @@ class AdminCheckExpirationView(View):
 						notif.save()
 
 						rented_item.notified = 2
-						rented_item.penalty = ((payment * 0.1)/24)*hours_after
+						rented_item.penalty = ((payment * penalty_rate_per_day)/24)*hours_after
 						rented_item.save()
 
 						print("For notifications and computation of penalty: " + str(rented_item.penalty) + ", hours = " + str(hours_after))
 					
 
 					#for blocking a user
-					blocked_date = rented_item.rent_expiration + timedelta(days=14)
+					blocked_date = rented_item.rent_expiration + timedelta(days=15)
 					if datetime.now() < blocked_date: #notify before blocked
 
 						print("now: " + str(datetime.now()))

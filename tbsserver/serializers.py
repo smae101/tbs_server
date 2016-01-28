@@ -45,7 +45,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Item
-		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'quantity', 'picture', 'stars_required','stars_to_use', 'date_approved'
+		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'quantity', 'reserved_quantity', 'picture', 'stars_required','stars_to_use', 'date_approved'
 
 	def get_date_approved(self, obj):
 		date = getattr(obj,'date_approved')
@@ -89,7 +89,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Transaction
-		fields = 'id','item', 'item_code', 'buyer', 'seller', 'date_claimed'
+		fields = 'id','item', 'item_code', 'buyer', 'seller', 'date_claimed', 'total_payment', 'tbs_share', 'user_share'
 
 	def get_date_claimed(self, obj):
 		date = getattr(obj,'date_claimed')

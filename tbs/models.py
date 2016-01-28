@@ -49,6 +49,7 @@ class Item(models.Model):
 	purpose = models.CharField(max_length=10)
 	price = models.FloatField(default=0)
 	quantity = models.IntegerField(default=0)
+	reserved_quantity = models.IntegerField(default=0)
 	stars_to_use = models.IntegerField(default=0)
 	picture = models.URLField()
 	stars_required = models.IntegerField(default=0)
@@ -126,6 +127,9 @@ class Transaction(models.Model):
 	seller = models.ForeignKey(UserProfile,related_name="transactions_as_owner")
 	buyer = models.ForeignKey(UserProfile,related_name="transactions_as_buyer")
 	date_claimed = models.DateTimeField()
+	total_payment = models.FloatField(default=0)
+	tbs_share = models.FloatField(default=0)
+	user_share = models.FloatField(default=0)
 
 	def __str__(self):
 		return str(self.id)
@@ -169,6 +173,14 @@ class ItemCode(models.Model):
 
 	def __str__(self):
 		return str(self.item_code)
+
+
+class Rate(models.Model):
+	tbs_share = models.IntegerField(default=0) #30%
+	user_share = models.IntegerField(default=0) #70%
+	penalty_rate_per_day = models.IntegerField(default=0)
+	rate_of_added_stars_based_on_price = models.IntegerField(default=0) #20%
+	rate_of_added_stars_based_on_stars_required = models.IntegerField(default=0) #10%
 
 
 
