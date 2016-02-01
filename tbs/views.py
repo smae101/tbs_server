@@ -676,102 +676,109 @@ class BuyItemView(View):
 					return JsonResponse(response)
 
 				else: 
-					item = Item.objects.get(id=item_id)
-					rates = Rate.objects.get(id=1)
-					if item is not None:
-						if item.quantity >= int(quantity) and int(quantity) > 0:
+					try:
+						item = Item.objects.get(id=item_id)
+						rates = Rate.objects.get(id=1)
+						if item is not None:
+							if item.quantity >= int(quantity) and int(quantity) > 0:
 
-							reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Sell").aggregate(Sum('quantity')).get('quantity__sum', 0)
-							print("Reserved items count (Sell): " + str(reserved_count))
+								reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Sell").aggregate(Sum('quantity')).get('quantity__sum', 0)
+								print("Reserved items count (Sell): " + str(reserved_count))
 
-							if reserved_count is None:
-								total = 0
-							else:
-								total = int(reserved_count) + int(quantity)
-
-							print("Total items to be reserved: " + str(total))
-
-							if total <= 3 and int(quantity) <= 3:
-								reservation_request = ReservationRequest()
-
-								if stars_to_use != "":
-									if int(stars_to_use) == 50:
-										discount = "5%"
-									elif int(stars_to_use) == 100:
-										discount = "10%"
-									elif int(stars_to_use) == 150:
-										discount = "15%"
-
-									discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
-									reservation_request.stars_to_use = int(stars_to_use)
-									reservation_request.payment = discounted_price * float(quantity)
-									user_share = (discounted_price * float(quantity)) * float(rates.user_share/100)
-									message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
-
-									buyerProfile = UserProfile.objects.get(user=user)
-									buyerProfile.stars_collected = buyerProfile.stars_collected - int(stars_to_use)
-									buyerProfile.save()
-
+								if reserved_count is None:
+									total = 0
 								else:
-									reservation_request.payment = item.price * float(quantity)
-									user_share = (item.price * float(quantity)) * float(rates.user_share/100)
-									message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
+									total = int(reserved_count) + int(quantity)
+
+								print("Total items to be reserved: " + str(total))
+
+								if total <= 3 and int(quantity) <= 3:
+									reservation_request = ReservationRequest()
+
+									if stars_to_use != "":
+										if int(stars_to_use) == 50:
+											discount = "5%"
+										elif int(stars_to_use) == 100:
+											discount = "10%"
+										elif int(stars_to_use) == 150:
+											discount = "15%"
+
+										discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
+										reservation_request.stars_to_use = int(stars_to_use)
+										reservation_request.payment = discounted_price * float(quantity)
+										user_share = (discounted_price * float(quantity)) * float(rates.user_share/100)
+										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
+
+										buyerProfile = UserProfile.objects.get(user=user)
+										buyerProfile.stars_collected = buyerProfile.stars_collected - int(stars_to_use)
+										buyerProfile.save()
+
+									else:
+										reservation_request.payment = item.price * float(quantity)
+										user_share = (item.price * float(quantity)) * float(rates.user_share/100)
+										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
 
 
-								item.status = "Reserved"
-								item.quantity = item.quantity - int(quantity)
-								item.reserved_quantity = item.reserved_quantity + int(quantity)
-								item.save()
-								
-								reservation_request.buyer = user
-								reservation_request.item = item
-								reservation_request.quantity = quantity
-								reservation_request.item_code = str(new_item_code)
-								reservation_request.status = "Reserved"
-								reservation_request.save()
+									item.status = "Reserved"
+									item.quantity = item.quantity - int(quantity)
+									item.reserved_quantity = item.reserved_quantity + int(quantity)
+									item.save()
+									
+									reservation_request.buyer = user
+									reservation_request.item = item
+									reservation_request.quantity = quantity
+									reservation_request.item_code = str(new_item_code)
+									reservation_request.status = "Reserved"
+									reservation_request.save()
 
-								notif_admin = Notification()
-								notif_admin.target = User.objects.get(is_staff=True)
-								notif_admin.maker = user
-								notif_admin.item = item
-								notif_admin.item_code = str(new_item_code)
-								notif_admin.message = buyer + " wants to buy the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + "). Item code is " + str(new_item_code) + "."
-								notif_admin.notification_type = "buy"
-								notif_admin.status = "unread"
-								notif_admin.save()
+									notif_admin = Notification()
+									notif_admin.target = User.objects.get(is_staff=True)
+									notif_admin.maker = user
+									notif_admin.item = item
+									notif_admin.item_code = str(new_item_code)
+									notif_admin.message = buyer + " wants to buy the " + item.name + " sold by " + item.owner.user.username + " (quantity = " + quantity + "). Item code is " + str(new_item_code) + "."
+									notif_admin.notification_type = "buy"
+									notif_admin.status = "unread"
+									notif_admin.save()
 
-								notif_seller = Notification()
-								notif_seller.target = User.objects.get(username=item.owner.user.username)
-								notif_seller.maker = user
-								notif_seller.item = item
-								notif_seller.item_code = str(new_item_code)
-								notif_seller.message = message
-								notif_seller.notification_type = "buy"
-								notif_seller.status = "unread"
-								notif_seller.save()
+									notif_seller = Notification()
+									notif_seller.target = User.objects.get(username=item.owner.user.username)
+									notif_seller.maker = user
+									notif_seller.item = item
+									notif_seller.item_code = str(new_item_code)
+									notif_seller.message = message
+									notif_seller.notification_type = "buy"
+									notif_seller.status = "unread"
+									notif_seller.save()
 
-								code.item_code =  str(new_item_code)
-								code.save()
+									code.item_code =  str(new_item_code)
+									code.save()
 
-								response = {
-									'status': 201,
-									'statusText': 'Item reserved successfully',
-								}
+									response = {
+										'status': 201,
+										'statusText': 'Item reserved successfully',
+									}
+								else:
+									response = {
+									'status': 403,
+									'statusText': 'Reservation Failed. Maximum of 3 pieces of for sale items to be reserved.',
+									}
 							else:
 								response = {
 								'status': 403,
-								'statusText': 'Reservation Failed. Maximum of 3 pieces of for sale items to be reserved.',
+								'statusText': 'Not enough item quantity to buy or invalid quantity inputted',
 								}
 						else:
 							response = {
-							'status': 403,
-							'statusText': 'Not enough item quantity to buy or invalid quantity inputted',
+								'status': 404,
+								'statusText': 'Item does not exist',
 							}
-					else:
+
+					except Item.DoesNotExist:
 						response = {
-							'status': 404,
-							'statusText': 'Item does not exist',
-						}
+								'status': 404,
+								'statusText': 'Item not found',
+							}
 			else:
 				response = {
 					'status': 404,
@@ -812,80 +819,87 @@ class RentItemView(View):
 					}
 					return JsonResponse(response)
 				else: 
-					item = Item.objects.get(id=item_id)
-					rates = Rate.objects.get(id=1)
-					if item is not None:
-						if item.quantity >= int(quantity) and int(quantity) > 0:
+					try:
+						item = Item.objects.get(id=item_id)
+						rates = Rate.objects.get(id=1)
+						if item is not None:
+							if item.quantity >= int(quantity) and int(quantity) > 0:
 
-							reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Rent").aggregate(Sum('quantity')).get('quantity__sum', 0)
-							print("Reserved items count (Rent): "+str(reserved_count))
+								reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Rent").aggregate(Sum('quantity')).get('quantity__sum', 0)
+								print("Reserved items count (Rent): "+str(reserved_count))
 
-							if reserved_count is None:
-								total = 0
-							else:
-								total = int(reserved_count) + int(quantity)
+								if reserved_count is None:
+									total = 0
+								else:
+									total = int(reserved_count) + int(quantity)
 
-							print("Total items to be reserved: " + str(total))
+								print("Total items to be reserved: " + str(total))
 
-							if total <= 3 and int(quantity) <= 3:
-								user_share = (item.price * float(quantity)) * float(rates.user_share/100)
+								if total <= 3 and int(quantity) <= 3:
+									user_share = (item.price * float(quantity)) * float(rates.user_share/100)
 
-								item.status = "Reserved"
-								item.quantity = item.quantity - int(quantity)
-								item.reserved_quantity = item.reserved_quantity + int(quantity)
-								item.save()
+									item.status = "Reserved"
+									item.quantity = item.quantity - int(quantity)
+									item.reserved_quantity = item.reserved_quantity + int(quantity)
+									item.save()
 
-								reservation_request = ReservationRequest()
-								reservation_request.buyer = user
-								reservation_request.item = item
-								reservation_request.quantity = quantity
-								reservation_request.payment = item.price * float(quantity)
-								reservation_request.item_code = str(new_item_code)
-								reservation_request.status = "Reserved"
-								reservation_request.save()
+									reservation_request = ReservationRequest()
+									reservation_request.buyer = user
+									reservation_request.item = item
+									reservation_request.quantity = quantity
+									reservation_request.payment = item.price * float(quantity)
+									reservation_request.item_code = str(new_item_code)
+									reservation_request.status = "Reserved"
+									reservation_request.save()
 
-								notif_admin = Notification()
-								notif_admin.target = User.objects.get(is_staff=True)
-								notif_admin.maker = user
-								notif_admin.item = item
-								notif_admin.item_code = str(new_item_code)
-								notif_admin.message = renter + " wants to rent the " + item.name + " owned by " + item.owner.user.username + " (quantity = " + quantity + "). Item code is " + str(new_item_code) + "."
-								notif_admin.notification_type = "rent"
-								notif_admin.status = "unread"
-								notif_admin.save()
+									notif_admin = Notification()
+									notif_admin.target = User.objects.get(is_staff=True)
+									notif_admin.maker = user
+									notif_admin.item = item
+									notif_admin.item_code = str(new_item_code)
+									notif_admin.message = renter + " wants to rent the " + item.name + " owned by " + item.owner.user.username + " (quantity = " + quantity + "). Item code is " + str(new_item_code) + "."
+									notif_admin.notification_type = "rent"
+									notif_admin.status = "unread"
+									notif_admin.save()
 
-								notif_seller = Notification()
-								notif_seller.target = User.objects.get(username=item.owner.user.username)
-								notif_seller.maker = user
-								notif_seller.item = item
-								notif_seller.item_code = str(new_item_code)
-								notif_seller.message = renter + " wants to rent your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
-								notif_seller.notification_type = "rent"
-								notif_seller.status = "unread"
-								notif_seller.save()
+									notif_seller = Notification()
+									notif_seller.target = User.objects.get(username=item.owner.user.username)
+									notif_seller.maker = user
+									notif_seller.item = item
+									notif_seller.item_code = str(new_item_code)
+									notif_seller.message = renter + " wants to rent your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
+									notif_seller.notification_type = "rent"
+									notif_seller.status = "unread"
+									notif_seller.save()
 
-								code.item_code =  str(new_item_code)
-								code.save()
+									code.item_code =  str(new_item_code)
+									code.save()
 
-								response = {
-									'status': 201,
-									'statusText': 'Item reserved successfully',
-								}
+									response = {
+										'status': 201,
+										'statusText': 'Item reserved successfully',
+									}
+								else:
+									response = {
+										'status': 403,
+										'statusText': 'Reservation Failed. Maximum of 3 pieces of for rent items to be reserved.'
+									}
 							else:
 								response = {
 									'status': 403,
-									'statusText': 'Reservation Failed. Maximum of 3 pieces of for rent items to be reserved.'
+									'statusText': 'Not enough item quantity to rent',
 								}
 						else:
 							response = {
-								'status': 403,
-								'statusText': 'Not enough item quantity to rent',
+								'status': 404,
+								'statusText': 'Item does not exist',
 							}
-					else:
+
+					except Item.DoesNotExist:
 						response = {
-							'status': 404,
-							'statusText': 'Item does not exist',
-						}
+								'status': 404,
+								'statusText': 'Item not found',
+							}
 			else:
 				response = {
 					'status': 404,
@@ -996,95 +1010,102 @@ class GetDonatedItemView(View):
 		if buyer and item_id and quantity:
 			user =  User.objects.get(username=buyer)
 			if user is not None:
-				donee = UserProfile.objects.get(user=user)
-				item = Item.objects.get(id=item_id)
-				if donee.status == "blocked":
-					response = {
-						'status': 403,
-						'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
-					}
-					return JsonResponse(response)
+				try:
+					donee = UserProfile.objects.get(user=user)
+					item = Item.objects.get(id=item_id)
+					if donee.status == "blocked":
+						response = {
+							'status': 403,
+							'statusText': 'You are temporarily blocked. Please return your rented item to unblock.',
+						}
+						return JsonResponse(response)
 
 
-				elif item is not None:
-					if item.quantity >= int(quantity) and int(quantity) > 0:
-						if donee.stars_collected >= (item.stars_required * int(quantity)):
+					elif item is not None:
+						if item.quantity >= int(quantity) and int(quantity) > 0:
+							if donee.stars_collected >= (item.stars_required * int(quantity)):
 
-							reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Donate").aggregate(Sum('quantity')).get('quantity__sum', 0)
-							print("Reserved items count (Donate): "+str(reserved_count))
+								reserved_count = ReservationRequest.objects.filter(buyer=user, item__purpose="Donate").aggregate(Sum('quantity')).get('quantity__sum', 0)
+								print("Reserved items count (Donate): "+str(reserved_count))
 
-							if reserved_count is None:
-								total = 0
-							else:
-								total = int(reserved_count) + int(quantity)
+								if reserved_count is None:
+									total = 0
+								else:
+									total = int(reserved_count) + int(quantity)
 
-							print("Total items to be reserved: " + str(total))
+								print("Total items to be reserved: " + str(total))
 
-							if total <= 3 and int(quantity) <= 3:
-								item.status = "Reserved"
-								item.quantity = item.quantity - int(quantity)
-								item.reserved_quantity = item.reserved_quantity + int(quantity)
-								item.save()
-								
-								donee.stars_collected = donee.stars_collected - (item.stars_required * int(quantity))
-								donee.save()
+								if total <= 3 and int(quantity) <= 3:
+									item.status = "Reserved"
+									item.quantity = item.quantity - int(quantity)
+									item.reserved_quantity = item.reserved_quantity + int(quantity)
+									item.save()
+									
+									donee.stars_collected = donee.stars_collected - (item.stars_required * int(quantity))
+									donee.save()
 
-								reservation_request = ReservationRequest()
-								reservation_request.buyer = user
-								reservation_request.item = item
-								reservation_request.quantity = quantity
-								reservation_request.item_code = str(new_item_code)
-								reservation_request.status = "Reserved"
-								reservation_request.save()
+									reservation_request = ReservationRequest()
+									reservation_request.buyer = user
+									reservation_request.item = item
+									reservation_request.quantity = quantity
+									reservation_request.item_code = str(new_item_code)
+									reservation_request.status = "Reserved"
+									reservation_request.save()
 
-								notif_admin = Notification()
-								notif_admin.target = User.objects.get(is_staff=True)
-								notif_admin.maker = user
-								notif_admin.item = item
-								notif_admin.item_code = str(new_item_code)
-								notif_admin.message = buyer + " wants to get the " + item.name + " donated by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
-								notif_admin.notification_type = "get"
-								notif_admin.status = "unread"
-								notif_admin.save()
+									notif_admin = Notification()
+									notif_admin.target = User.objects.get(is_staff=True)
+									notif_admin.maker = user
+									notif_admin.item = item
+									notif_admin.item_code = str(new_item_code)
+									notif_admin.message = buyer + " wants to get the " + item.name + " donated by " + item.owner.user.username + " (quantity = " + quantity + ").Item code is " + str(new_item_code) + "."
+									notif_admin.notification_type = "get"
+									notif_admin.status = "unread"
+									notif_admin.save()
 
-								#kay inig donate sa item kay sa admin na mn dritso ang item. wa nay labot ang owner sa iyang item after niya mahatag sa admin
-								'''notif_seller = Notification()
-								notif_seller.target = User.objects.get(username=item.owner.user.username)
-								notif_seller.maker = user
-								notif_seller.item = item
-								notif_seller.item_code = str(new_item_code)
-								notif_seller.message = buyer + " wants to get your donated item " + item.name + " with item code " + str(new_item_code) + " (quantity = " + quantity + ")."
-								notif_seller.notification_type = "get"
-								notif_seller.status = "unread"
-								notif_seller.save()''' 
+									#kay inig donate sa item kay sa admin na mn dritso ang item. wa nay labot ang owner sa iyang item after niya mahatag sa admin
+									'''notif_seller = Notification()
+									notif_seller.target = User.objects.get(username=item.owner.user.username)
+									notif_seller.maker = user
+									notif_seller.item = item
+									notif_seller.item_code = str(new_item_code)
+									notif_seller.message = buyer + " wants to get your donated item " + item.name + " with item code " + str(new_item_code) + " (quantity = " + quantity + ")."
+									notif_seller.notification_type = "get"
+									notif_seller.status = "unread"
+									notif_seller.save()''' 
 
-								code.item_code =  str(new_item_code)
-								code.save()
+									code.item_code =  str(new_item_code)
+									code.save()
 
-								response = {
-									'status': 201,
-									'statusText': item.name + ' has been reserved',
-								}
+									response = {
+										'status': 201,
+										'statusText': item.name + ' has been reserved',
+									}
+								else:
+									response = {
+										'status': 403,
+										'statusText': 'Reservation Failed. Maximum of 3 pieces of donated items to be reserved.',
+									}
 							else:
 								response = {
 									'status': 403,
-									'statusText': 'Reservation Failed. Maximum of 3 pieces of donated items to be reserved.',
+									'statusText': 'Not enough stars',
 								}
 						else:
 							response = {
-								'status': 403,
-								'statusText': 'Not enough stars',
-							}
+							'status': 403,
+							'statusText': 'Not enough item quantity',
+						}
 					else:
 						response = {
-						'status': 403,
-						'statusText': 'Not enough item quantity',
-					}
-				else:
+							'status': 404,
+							'statusText': 'Item not found',
+						}
+
+				except Item.DoesNotExist:
 					response = {
-						'status': 404,
-						'statusText': 'Item not found',
-					}
+							'status': 404,
+							'statusText': 'Item not found',
+						}
 			else:
 				response = {
 					'status': 404,
@@ -1120,48 +1141,67 @@ class AdminApproveItemView(View):
 			}
 			return JsonResponse(response)
 		else:
-			category = Category.objects.get(category_name=cat)
+			try:
+				category = Category.objects.get(category_name=cat)
+				item = Item.objects.get(id=item_id, status="Pending")
+				request = ApprovalSellRequest.objects.get(id=request_id)
 
-			item = Item.objects.get(id=item_id, status="Pending")
-			request = ApprovalSellRequest.objects.get(id=request_id)
+				if item.purpose == "Sell":
+					str_purpose = "for sale"
+				elif item.purpose == "Rent":
+					str_purpose = "for rent"
 
-			if item.purpose == "Sell":
-				str_purpose = "for sale"
-			elif item.purpose == "Rent":
-				str_purpose = "for rent"
+				if(item or request) is None:
+					response = {
+						'status': 404,
+						'statusText': 'Missing data',
+					}
+					return JsonResponse(response)
 
-			if(item or request) is None:
+				else:
+					item.category = category
+					item.status = status
+					item.date_approved = datetime.now()
+					item.save()
+
+					target = User.objects.get(username=item.owner.user.username)
+					maker = User.objects.get(is_staff=True)
+
+					notif = Notification()
+					notif.target = target
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = ""
+					notif.message = "Admin approves your " + str_purpose + " item " + item.name + "."
+					notif.notification_type = "approve"
+					notif.status = "unread"
+					notif.save()
+
+					request.delete()
+
+					response = {
+						'status': 200,
+						'statusText': 'Sell item approval successful',}
+					return JsonResponse(response)
+
+			except Item.DoesNotExist:
 				response = {
 					'status': 404,
-					'statusText': 'Missing data',
-				}
+					'statusText': 'Item not found',}
 				return JsonResponse(response)
 
-			else:
-				item.category = category
-				item.status = status
-				item.date_approved = datetime.now()
-				item.save()
-
-				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(username="admin")
-
-				notif = Notification()
-				notif.target = target
-				notif.maker = maker
-				notif.item = item
-				notif.item_code = ""
-				notif.message = "Admin approves your " + str_purpose + " item " + item.name + "."
-				notif.notification_type = "approve"
-				notif.status = "unread"
-				notif.save()
-
-				request.delete()
-
+			except ApprovalSellRequest.DoesNotExist:
 				response = {
-					'status': 200,
-					'statusText': 'Sell item approval successful',}
+					'status': 404,
+					'statusText': 'Item not found',}
 				return JsonResponse(response)
+
+			except Category.DoesNotExist:
+				response = {
+					'status': 404,
+					'statusText': 'Category not found',}
+				return JsonResponse(response)
+
 
 	def get(self, request):
 		return render(request, 'approveSoldItem.html')
@@ -1181,44 +1221,51 @@ class AdminDisapproveItemView(View):
 			}
 			return JsonResponse(response)
 		else:
-			item = Item.objects.get(id=item_id, status="Pending")
-			request = ApprovalSellRequest.objects.get(id=request_id)
+			try:
+				item = Item.objects.get(id=item_id, status="Pending")
+				request = ApprovalSellRequest.objects.get(id=request_id)
 
-			if item.purpose == "Sell":
-				str_purpose = "for sale"
-			elif item.purpose == "Rent":
-				str_purpose = "for rent"
+				if item.purpose == "Sell":
+					str_purpose = "for sale"
+				elif item.purpose == "Rent":
+					str_purpose = "for rent"
 
-			if (item or request) is None:
+				if (item or request) is None:
+					response = {
+						'status': 404,
+						'statusText': 'Item not found',
+					}
+					return JsonResponse(response)
+
+				else:
+					item.status = status
+					item.save()
+
+					target = User.objects.get(username=item.owner.user.username)
+					maker = User.objects.get(is_staff=True)
+
+					notif = Notification()
+					notif.target = target
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = ""
+					notif.message = "Admin disapproves your " + str_purpose + " item, " + item.name + "."
+					notif.notification_type = "disapprove"
+					notif.status = "unread"
+					notif.save()
+
+					request.delete()
+
+					response = {
+						'status': 200,
+						'statusText': 'Sell item disapproval successful',}
+					return JsonResponse(response)
+
+			except Item.DoesNotExist:
 				response = {
-					'status': 404,
-					'statusText': 'Item not found',
-				}
-				return JsonResponse(response)
-
-			else:
-				item.status = status
-				item.save()
-
-				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(username="admin")
-
-				notif = Notification()
-				notif.target = target
-				notif.maker = maker
-				notif.item = item
-				notif.item_code = ""
-				notif.message = "Admin disapproves your " + str_purpose + " item, " + item.name + "."
-				notif.notification_type = "disapprove"
-				notif.status = "unread"
-				notif.save()
-
-				request.delete()
-
-				response = {
-					'status': 200,
-					'statusText': 'Sell item disapproval successful',}
-				return JsonResponse(response)
+						'status': 404,
+						'statusText': 'Item not found',
+					}
 
 	def get(self, request):
 		return render(request, 'disapproveItem.html')
@@ -1273,43 +1320,50 @@ class ReservedItemAvailableView(View):
 			}
 			return JsonResponse(response)
 		else:
-			item = Item.objects.get(id=item_id, status="Reserved")
-			request = ReservationRequest.objects.get(id=request_id, status="Reserved")
+			try:
+				item = Item.objects.get(id=item_id, status="Reserved")
+				request = ReservationRequest.objects.get(id=request_id, status="Reserved")
 
-			if(item or request) is None:
+				if(item or request) is None:
+					response = {
+						'status': 404,
+						'statusText': 'Item not available',
+					}
+					return JsonResponse(response)
+				else:
+					target = User.objects.get(username=request.buyer.username)
+					maker = User.objects.get(is_staff=True)
+
+					if item.purpose == "Sell" or item.purpose == "Rent":
+						message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office. Don't forget to bring the payment for the item in the amount of Php " + format(request.payment,'.2f') + "."
+					elif item.purpose == "Donate":
+						message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office."
+
+
+					notif = Notification()
+					notif.target = target
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = request.item_code
+					notif.message = message
+					notif.notification_type = "Available"
+					notif.status = "unread"
+					notif.save()
+
+					request.status = status
+					request.request_expiration = expiry
+					request.save()
+
+					response = {
+						'status': 200,
+						'statusText': 'Item set available successful',}
+					return JsonResponse(response)
+
+			except Item.DoesNotExist:
 				response = {
-					'status': 404,
-					'statusText': 'Item not available',
-				}
-				return JsonResponse(response)
-			else:
-				target = User.objects.get(username=request.buyer.username)
-				maker = User.objects.get(is_staff=True)
-
-				if item.purpose == "Sell" or item.purpose == "Rent":
-					message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office. Don't forget to bring the payment for the item in the amount of Php " + format(request.payment,'.2f') + "."
-				elif item.purpose == "Donate":
-					message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS admin's office."
-
-
-				notif = Notification()
-				notif.target = target
-				notif.maker = maker
-				notif.item = item
-				notif.item_code = request.item_code
-				notif.message = message
-				notif.notification_type = "Available"
-				notif.status = "unread"
-				notif.save()
-
-				request.status = status
-				request.request_expiration = expiry
-				request.save()
-
-				response = {
-					'status': 200,
-					'statusText': 'Item set available successful',}
-				return JsonResponse(response)
+						'status': 404,
+						'statusText': 'Item not found',
+					}
 
 	def get(self, request):
 		return render(request, 'itemAvailable.html')
@@ -1330,110 +1384,117 @@ class ReservedItemClaimedView(View):
 			}
 			return JsonResponse(response)
 		else:
-			request = ReservationRequest.objects.get(id=request_id,status="Available")
-			item = Item.objects.get(id=item_id)
-			rates = Rate.objects.get(id=1)
-
-			if(item or request) is None:
-				response = {
-					'status': 404,
-					'statusText': 'Item not available',
-				}
-				return JsonResponse(response)
-			else:
-				item.status = status
-				item.reserved_quantity = item.reserved_quantity - request.quantity
-				item.save()
-
-
-				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(is_staff=True)
-				buyer = UserProfile.objects.get(user=request.buyer)
+			try:
+				request = ReservationRequest.objects.get(id=request_id,status="Available")
+				item = Item.objects.get(id=item_id)
 				rates = Rate.objects.get(id=1)
 
-				user_share = request.payment * float(rates.user_share/100)
-				tbs_share = request.payment * float(rates.tbs_share/100)
+				if(item or request) is None:
+					response = {
+						'status': 404,
+						'statusText': 'Item not available',
+					}
+					return JsonResponse(response)
+				else:
+					item.status = status
+					item.reserved_quantity = item.reserved_quantity - request.quantity
+					item.save()
 
-				rate_stars_to_add = rates.rate_of_added_stars_based_on_price/100
-				stars_to_add = 0
-				stars_to_add = int((item.price*rate_stars_to_add)*request.quantity)
 
-				if item.purpose == "Sell" or item.purpose == "Rent":
-					if item.purpose == 'Sell':
-						str_purpose = "for sale"
-						transaction_type = "Buy"
-						if request.stars_to_use == 0:
+					target = User.objects.get(username=item.owner.user.username)
+					maker = User.objects.get(is_staff=True)
+					buyer = UserProfile.objects.get(user=request.buyer)
+					rates = Rate.objects.get(id=1)
+
+					user_share = request.payment * float(rates.user_share/100)
+					tbs_share = request.payment * float(rates.tbs_share/100)
+
+					rate_stars_to_add = rates.rate_of_added_stars_based_on_price/100
+					stars_to_add = 0
+					stars_to_add = int((item.price*rate_stars_to_add)*request.quantity)
+
+					if item.purpose == "Sell" or item.purpose == "Rent":
+						if item.purpose == 'Sell':
+							str_purpose = "for sale"
+							transaction_type = "Buy"
+							if request.stars_to_use == 0:
+								buyer.stars_collected = buyer.stars_collected + stars_to_add
+								buyer.save()
+
+						elif item.purpose == 'Rent':
+							str_purpose = "for rent"
+							transaction_type = "Rent"
 							buyer.stars_collected = buyer.stars_collected + stars_to_add
 							buyer.save()
 
-					elif item.purpose == 'Rent':
-						str_purpose = "for rent"
-						transaction_type = "Rent"
-						buyer.stars_collected = buyer.stars_collected + stars_to_add
-						buyer.save()
+	# only owners of for sale and for rent items are notified if their item was claimed
+						notif = Notification()
+						notif.target = target
+						notif.maker = maker
+						notif.item = item
+						notif.item_code = request.item_code
+						notif.message = "Your " + str_purpose + " item, " + item.name + " with item code " + request.item_code + " has been claimed. You may now claim your share of the total payment in the amount of " + format(user_share,'.2f') + " at the TBS admin's office."
+						notif.notification_type = "sold"
+						notif.status = "unread"
+						notif.save()
 
-# only owners of for sale and for rent items are notified if their item was claimed
-					notif = Notification()
-					notif.target = target
-					notif.maker = maker
-					notif.item = item
-					notif.item_code = request.item_code
-					notif.message = "Your " + str_purpose + " item, " + item.name + " with item code " + request.item_code + " has been claimed. You may now claim your share of the total payment in the amount of " + format(user_share,'.2f') + " at the TBS admin's office."
-					notif.notification_type = "sold"
-					notif.status = "unread"
-					notif.save()
-
-# only for rent and for sale item owners are given stars if item is claimed
-					owner = UserProfile.objects.get(user=target)
-					owner.stars_collected = owner.stars_collected + stars_to_add
-					owner.save()
-				else:
-					transaction_type = "Get Donation"
+	# only for rent and for sale item owners are given stars if item is claimed
+						owner = UserProfile.objects.get(user=target)
+						owner.stars_collected = owner.stars_collected + stars_to_add
+						owner.save()
+					else:
+						transaction_type = "Get Donation"
 
 
-# for recording of rented items
-				expiry = datetime.now() + timedelta(days=item.rent_duration)
+	# for recording of rented items
+					expiry = datetime.now() + timedelta(days=item.rent_duration)
 
-				if item.purpose == 'Rent':
-					rentedItem =  RentedItem()
-					rentedItem.renter = buyer.user
-					rentedItem.item = item
-					rentedItem.quantity = request.quantity
-					rentedItem.item_code = request.item_code
-					rentedItem.rent_date =  datetime.now()
-					rentedItem.rent_expiration = expiry
-					rentedItem.penalty = 0
-					rentedItem.save()
+					if item.purpose == 'Rent':
+						rentedItem =  RentedItem()
+						rentedItem.renter = buyer.user
+						rentedItem.item = item
+						rentedItem.quantity = request.quantity
+						rentedItem.item_code = request.item_code
+						rentedItem.rent_date =  datetime.now()
+						rentedItem.rent_expiration = expiry
+						rentedItem.penalty = 0
+						rentedItem.save()
 
-					notif = Notification()
-					notif.target = request.buyer
-					notif.maker = maker
-					notif.item = item
-					notif.item_code = request.item_code
-					notif.message = "You have successfully rented the item, " + item.name + ". Please return it on or before " + expiry.strftime("%Y-%m-%d %H:%M:%S") + " to avoid penalty." 
-					notif.notification_type = "sold"
-					notif.status = "unread"
-					notif.save()
-					
+						notif = Notification()
+						notif.target = request.buyer
+						notif.maker = maker
+						notif.item = item
+						notif.item_code = request.item_code
+						notif.message = "You have successfully rented the item, " + item.name + ". Please return it on or before " + expiry.strftime("%Y-%m-%d %H:%M:%S") + " to avoid penalty." 
+						notif.notification_type = "sold"
+						notif.status = "unread"
+						notif.save()
+						
 
-				transaction = Transaction()
-				transaction.transaction_type = transaction_type
-				transaction.item = item
-				transaction.seller = owner
-				transaction.buyer = buyer
-				transaction.date_claimed = datetime.now()
-				transaction.item_code = request.item_code
-				transaction.total_payment = request.payment
-				transaction.tbs_share = tbs_share
-				transaction.user_share = user_share
-				transaction.save()
+					transaction = Transaction()
+					transaction.transaction_type = transaction_type
+					transaction.item = item
+					transaction.seller = owner
+					transaction.buyer = buyer
+					transaction.date_claimed = datetime.now()
+					transaction.item_code = request.item_code
+					transaction.total_payment = request.payment
+					transaction.tbs_share = tbs_share
+					transaction.user_share = user_share
+					transaction.save()
 
-				request.delete()
+					request.delete()
 
+					response = {
+						'status': 200,
+						'statusText': 'Item successfully claimed',}
+					return JsonResponse(response)
+
+			except Item.DoesNotExist:
 				response = {
-					'status': 200,
-					'statusText': 'Item successfully claimed',}
-				return JsonResponse(response)
+						'status': 404,
+						'statusText': 'Item not found',
+					}
 
 	def get(self, request):
 		return render(request, 'itemClaimed.html')
@@ -1457,50 +1518,57 @@ class AdminApproveDonationView(View):
 			}
 			return JsonResponse(response)
 		else:
-			item = Item.objects.get(id=item_id, status="Pending")
-			rates = Rate.objects.get(id=1)
-			owner = UserProfile.objects.get(user=item.owner.user)
-			request = ApprovalDonateRequest.objects.get(id=request_id)
+			try:
+				item = Item.objects.get(id=item_id, status="Pending")
+				rates = Rate.objects.get(id=1)
+				owner = UserProfile.objects.get(user=item.owner.user)
+				request = ApprovalDonateRequest.objects.get(id=request_id)
 
-			if(item or request) is None:
+				if(item or request) is None:
+					response = {
+						'status': 404,
+						'statusText': 'Item not available',
+					}
+					return JsonResponse(response)
+				else:
+					category = Category.objects.get(category_name=cat)
+
+					item.status = status
+					item.date_approved = datetime.now()
+					item.stars_required = stars
+					item.category = category
+					item.save()
+
+					stars_to_add = float(item.stars_required) * (rates.rate_of_added_stars_based_on_stars_required/100)
+
+					target = User.objects.get(username=item.owner.user.username)
+					maker = User.objects.get(is_staff=True)
+
+					notif = Notification()
+					notif.target = target
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = ""
+					notif.message = "Admin approves your donated item, " + item.name + "."
+					notif.notification_type = "approve"
+					notif.status = "unread"
+					notif.save()
+
+					owner.stars_collected = owner.stars_collected + (int(stars_to_add) * item.quantity)
+					owner.save()
+
+					request.delete()
+
+					response = {
+						'status': 200,
+						'statusText': 'Donated item approval successful',}
+					return JsonResponse(response)
+
+			except Item.DoesNotExist:
 				response = {
-					'status': 404,
-					'statusText': 'Item not available',
-				}
-				return JsonResponse(response)
-			else:
-				category = Category.objects.get(category_name=cat)
-
-				item.status = status
-				item.date_approved = datetime.now()
-				item.stars_required = stars
-				item.category = category
-				item.save()
-
-				stars_to_add = float(item.stars_required) * (rates.rate_of_added_stars_based_on_stars_required/100)
-
-				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(username="admin")
-
-				notif = Notification()
-				notif.target = target
-				notif.maker = maker
-				notif.item = item
-				notif.item_code = ""
-				notif.message = "Admin approves your donated item, " + item.name + "."
-				notif.notification_type = "approve"
-				notif.status = "unread"
-				notif.save()
-
-				owner.stars_collected = owner.stars_collected + (int(stars_to_add) * item.quantity)
-				owner.save()
-
-				request.delete()
-
-				response = {
-					'status': 200,
-					'statusText': 'Donated item approval successful',}
-				return JsonResponse(response)
+						'status': 404,
+						'statusText': 'Item not found',
+					}
 
 	def get(self, request):
 		return render(request, 'approveDonation.html')
@@ -1519,38 +1587,45 @@ class AdminDisapproveDonationView(View):
 			}
 			return JsonResponse(response)
 		else:
-			item = Item.objects.get(id=item_id, status="Pending")
-			request = ApprovalDonateRequest.objects.get(id=request_id)
+			try:
+				item = Item.objects.get(id=item_id, status="Pending")
+				request = ApprovalDonateRequest.objects.get(id=request_id)
 
-			if(item or request) is None:
+				if(item or request) is None:
+					response = {
+						'status': 404,
+						'statusText': 'Item not available',
+					}
+					return JsonResponse(response)
+				else:
+					item.status = status
+					item.save()
+
+					target = User.objects.get(username=item.owner.user.username)
+					maker = User.objects.get(is_staff=True)
+
+					notif = Notification()
+					notif.target = target
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = ""
+					notif.message = "Admin disapproves your donated item, " + item.name + "."
+					notif.notification_type = "disapprove"
+					notif.status = "unread"
+					notif.save()
+
+					request.delete()
+
+					response = {
+						'status': 200,
+						'statusText': 'Donated item disapproval successful',}
+					return JsonResponse(response)
+
+			except Item.DoesNotExist:
 				response = {
-					'status': 404,
-					'statusText': 'Item not available',
-				}
-				return JsonResponse(response)
-			else:
-				item.status = status
-				item.save()
-
-				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(username="admin")
-
-				notif = Notification()
-				notif.target = target
-				notif.maker = maker
-				notif.item = item
-				notif.item_code = ""
-				notif.message = "Admin disapproves your donated item, " + item.name + "."
-				notif.notification_type = "disapprove"
-				notif.status = "unread"
-				notif.save()
-
-				request.delete()
-
-				response = {
-					'status': 200,
-					'statusText': 'Donated item disapproval successful',}
-				return JsonResponse(response)
+						'status': 404,
+						'statusText': 'Item not found',
+					}
 
 	def get(self, request):
 		return render(request, 'disapproveItem.html')
@@ -1570,73 +1645,80 @@ class ReturnRentedItemView(View):
 			}
 			return JsonResponse(response)
 		else:
-			request = RentedItem.objects.get(id=rent_id)
-			item = Item.objects.get(id=item_id)
-			
-
-			if(item or request) is None:
-				response = {
-					'status': 404,
-					'statusText': 'Item not available',
-				}
-				return JsonResponse(response)
-			else:
-				renter = UserProfile.objects.get(user=request.renter)
-				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(is_staff=True)
-				rates = Rate.objects.get(id=1)
-
-				user_share = 0
-				tbs_share = 0
-
-				if request.penalty == 0:
-					message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it at the TBS admin's office."
-				else:
-					user_share = request.penalty * float(rates.user_share/100)
-					tbs_share = request.penalty * float(rates.tbs_share/100)
-					message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it, with your share of the penalty payment in the amount of Php " + format(user_share,'.2f') + " at the TBS admin's office."
-
-				item.status = status
-				item.quantity = item.quantity + request.quantity
-				item.save()
-
-				notif = Notification()
-				notif.target = target
-				notif.maker = maker
-				notif.item = item
-				notif.item_code = request.item_code
-				notif.message = message
-				notif.notification_type = "sold"
-				notif.status = "unread"
-				notif.save()
-
-				transaction = Transaction()
-				transaction.transaction_type = "Return Rented"
-				transaction.item = item
-				transaction.item_code = request.item_code
-				transaction.seller = item.owner
-				transaction.buyer = renter
-				transaction.date_claimed = datetime.now()
-				transaction.total_payment = request.penalty
-				transaction.user_share = user_share
-				transaction.tbs_share = tbs_share
-				transaction.save()
-
-				request.delete()
+			try:
+				item = Item.objects.get(id=item_id)
+				request = RentedItem.objects.get(id=rent_id)
 				
-				expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now())
-				if expired_rented:
-					renter.status = "blocked"
+
+				if(item or request) is None:
+					response = {
+						'status': 404,
+						'statusText': 'Item not available',
+					}
+					return JsonResponse(response)
 				else:
-					renter.status = "active"
+					renter = UserProfile.objects.get(user=request.renter)
+					target = User.objects.get(username=item.owner.user.username)
+					maker = User.objects.get(is_staff=True)
+					rates = Rate.objects.get(id=1)
 
-				renter.save()
+					user_share = 0
+					tbs_share = 0
+
+					if request.penalty == 0:
+						message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it at the TBS admin's office."
+					else:
+						user_share = request.penalty * float(rates.user_share/100)
+						tbs_share = request.penalty * float(rates.tbs_share/100)
+						message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it, with your share of the penalty payment in the amount of Php " + format(user_share,'.2f') + " at the TBS admin's office."
+
+					item.status = status
+					item.quantity = item.quantity + request.quantity
+					item.save()
+
+					notif = Notification()
+					notif.target = target
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = request.item_code
+					notif.message = message
+					notif.notification_type = "sold"
+					notif.status = "unread"
+					notif.save()
+
+					transaction = Transaction()
+					transaction.transaction_type = "Return Rented"
+					transaction.item = item
+					transaction.item_code = request.item_code
+					transaction.seller = item.owner
+					transaction.buyer = renter
+					transaction.date_claimed = datetime.now()
+					transaction.total_payment = request.penalty
+					transaction.user_share = user_share
+					transaction.tbs_share = tbs_share
+					transaction.save()
+
+					request.delete()
+					
+					expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now())
+					if expired_rented:
+						renter.status = "blocked"
+					else:
+						renter.status = "active"
+
+					renter.save()
 
 
+					response = {
+						'status': 200,
+						'statusText': 'Item successfully claimed',}
+					return JsonResponse(response)
+
+			except Item.DoesNotExist:
 				response = {
-					'status': 200,
-					'statusText': 'Item successfully claimed',}
-				return JsonResponse(response)
+						'status': 404,
+						'statusText': 'Item not found',
+					}
 
 	def get(self, request):
 		return render(request, 'itemReturned.html')
