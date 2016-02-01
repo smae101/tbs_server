@@ -955,7 +955,6 @@ class CancelReservedItemView(View):
 					notif_seller.target = User.objects.get(username=item.owner.user.username)
 					notif_seller.maker = user
 					notif_seller.item = item
-					notif_admin.item_code = reservation_request.item_code
 					notif_seller.message = buyer + " has canceled his/her reservation for your " + str_purpose  + " item, " + item.name + " with item_code " + reservation_request.item_code + ". You may now get your item at the TBS admin's office."
 					notif_seller.notification_type = "cancel"
 					notif_seller.status = "unread"
