@@ -931,7 +931,7 @@ class CancelReservedItemView(View):
 
 				item.stars_to_use = 0
 				item.quantity = item.quantity + reservation_request.quantity
-				item.reserved_quantity = item.reserved_quantity - int(quantity)
+				item.reserved_quantity = item.reserved_quantity - reservation_request.quantity
 				item.status = "Available"
 				item.save()
 
