@@ -1120,48 +1120,67 @@ class AdminApproveItemView(View):
 			}
 			return JsonResponse(response)
 		else:
-			category = Category.objects.get(category_name=cat)
+			try:
+				category = Category.objects.get(category_name=cat)
+				item = Item.objects.get(id=item_id, status="Pending")
+				request = ApprovalSellRequest.objects.get(id=request_id)
 
-			item = Item.objects.get(id=item_id, status="Pending")
-			request = ApprovalSellRequest.objects.get(id=request_id)
+				if item.purpose == "Sell":
+					str_purpose = "for sale"
+				elif item.purpose == "Rent":
+					str_purpose = "for rent"
 
-			if item.purpose == "Sell":
-				str_purpose = "for sale"
-			elif item.purpose == "Rent":
-				str_purpose = "for rent"
+				if(item or request) is None:
+					response = {
+						'status': 404,
+						'statusText': 'Missing data',
+					}
+					return JsonResponse(response)
 
-			if(item or request) is None:
+				else:
+					item.category = category
+					item.status = status
+					item.date_approved = datetime.now()
+					item.save()
+
+					target = User.objects.get(username=item.owner.user.username)
+					maker = User.objects.get(is_staff=True)
+
+					notif = Notification()
+					notif.target = target
+					notif.maker = maker
+					notif.item = item
+					notif.item_code = ""
+					notif.message = "Admin approves your " + str_purpose + " item " + item.name + "."
+					notif.notification_type = "approve"
+					notif.status = "unread"
+					notif.save()
+
+					request.delete()
+
+					response = {
+						'status': 200,
+						'statusText': 'Sell item approval successful',}
+					return JsonResponse(response)
+
+			except Item.DoesNotExist:
 				response = {
-					'status': 404,
-					'statusText': 'Missing data',
-				}
+					'status': 403,
+					'statusText': 'Item not found',}
 				return JsonResponse(response)
 
-			else:
-				item.category = category
-				item.status = status
-				item.date_approved = datetime.now()
-				item.save()
-
-				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(username="admin")
-
-				notif = Notification()
-				notif.target = target
-				notif.maker = maker
-				notif.item = item
-				notif.item_code = ""
-				notif.message = "Admin approves your " + str_purpose + " item " + item.name + "."
-				notif.notification_type = "approve"
-				notif.status = "unread"
-				notif.save()
-
-				request.delete()
-
+			except ApprovalSellRequest.DoesNotExist:
 				response = {
-					'status': 200,
-					'statusText': 'Sell item approval successful',}
+					'status': 403,
+					'statusText': 'Item not found',}
 				return JsonResponse(response)
+
+			except Category.DoesNotExist:
+				response = {
+					'status': 403,
+					'statusText': 'Category not found',}
+				return JsonResponse(response)
+
 
 	def get(self, request):
 		return render(request, 'approveSoldItem.html')
@@ -1201,7 +1220,7 @@ class AdminDisapproveItemView(View):
 				item.save()
 
 				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(username="admin")
+				maker = User.objects.get(is_staff=True)
 
 				notif = Notification()
 				notif.target = target
@@ -1480,7 +1499,7 @@ class AdminApproveDonationView(View):
 				stars_to_add = float(item.stars_required) * (rates.rate_of_added_stars_based_on_stars_required/100)
 
 				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(username="admin")
+				maker = User.objects.get(is_staff=True)
 
 				notif = Notification()
 				notif.target = target
@@ -1533,7 +1552,7 @@ class AdminDisapproveDonationView(View):
 				item.save()
 
 				target = User.objects.get(username=item.owner.user.username)
-				maker = User.objects.get(username="admin")
+				maker = User.objects.get(is_staff=True)
 
 				notif = Notification()
 				notif.target = target
