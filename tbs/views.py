@@ -1491,9 +1491,9 @@ class ReservedItemClaimedView(View):
 
 					transaction = Transaction()
 					transaction.transaction_type = transaction_type
-					transaction.item = item
-					transaction.seller = owner
-					transaction.buyer = buyer
+					transaction.item_name = item.name
+					transaction.seller = owner.user.username
+					transaction.buyer = buyer.user.username
 					transaction.date_claimed = datetime.now()
 					transaction.item_code = request.item_code
 					transaction.total_payment = request.payment
@@ -1706,10 +1706,10 @@ class ReturnRentedItemView(View):
 
 					transaction = Transaction()
 					transaction.transaction_type = "Return Rented"
-					transaction.item = item
+					transaction.item_name = item.name
 					transaction.item_code = request.item_code
-					transaction.seller = item.owner
-					transaction.buyer = renter
+					transaction.seller = item.owner.user.username
+					transaction.buyer = renter.user.username
 					transaction.date_claimed = datetime.now()
 					transaction.total_payment = request.penalty
 					transaction.user_share = user_share
