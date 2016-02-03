@@ -711,7 +711,7 @@ class BuyItemView(View):
 										reservation_request.stars_to_use = int(stars_to_use)
 										reservation_request.payment = payment
 										user_share = payment * share_rate
-										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + ".Rate: " + format(share_rate,'.2f')
+										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
 
 										buyerProfile = UserProfile.objects.get(user=user)
 										buyerProfile.stars_collected = buyerProfile.stars_collected - int(stars_to_use)
@@ -721,8 +721,7 @@ class BuyItemView(View):
 										payment = item.price * float(quantity)
 										reservation_request.payment = payment
 										user_share = payment * share_rate
-										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + ". Rate: " + format(rates.user_share,'.2f') + ". Percentage: " + format(share_rate,'.2f')
-
+										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
 
 									item.status = "Reserved"
 									item.quantity = item.quantity - int(quantity)
@@ -841,7 +840,7 @@ class RentItemView(View):
 								print("Total items to be reserved: " + str(total))
 
 								if total <= 3 and int(quantity) <= 3:
-									user_share = (item.price * float(quantity)) * float(rates.user_share/100)
+									user_share = (item.price * float(quantity)) * (float(rates.user_share)/float(100))
 
 									item.status = "Reserved"
 									item.quantity = item.quantity - int(quantity)
@@ -1410,8 +1409,8 @@ class ReservedItemClaimedView(View):
 					buyer = UserProfile.objects.get(user=request.buyer)
 					rates = Rate.objects.get(id=1)
 
-					user_share = request.payment * float(rates.user_share/100)
-					tbs_share = request.payment * float(rates.tbs_share/100)
+					user_share = request.payment * (float(rates.user_share)/float(100))
+					tbs_share = request.payment * (float(rates.tbs_share)/float(100))
 
 					rate_stars_to_add = rates.rate_of_added_stars_based_on_price/100
 					stars_to_add = 0
@@ -1672,8 +1671,8 @@ class ReturnRentedItemView(View):
 					if request.penalty == 0:
 						message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it at the TBS admin's office."
 					else:
-						user_share = request.penalty * float(rates.user_share/100)
-						tbs_share = request.penalty * float(rates.tbs_share/100)
+						user_share = request.penalty * (float(rates.user_share)/float(100))
+						tbs_share = request.penalty * (float(rates.tbs_share)/float(100))
 						message = "Your item, " + item.name + " with item code " + request.item_code + " has been returned by the renter. You may now claim it, with your share of the penalty payment in the amount of Php " + format(user_share,'.2f') + " at the TBS admin's office."
 
 					item.status = status
