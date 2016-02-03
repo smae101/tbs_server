@@ -694,6 +694,7 @@ class BuyItemView(View):
 
 								if total <= 3 and int(quantity) <= 3:
 									reservation_request = ReservationRequest()
+									share_rate = float(rates.user_share/100)
 
 									if stars_to_use != "":
 										if int(stars_to_use) == 50:
@@ -704,19 +705,22 @@ class BuyItemView(View):
 											discount = "15%"
 
 										discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
+										payment = discounted_price * float(quantity)
+
 										reservation_request.stars_to_use = int(stars_to_use)
-										reservation_request.payment = discounted_price * float(quantity)
-										user_share = (discounted_price * float(quantity)) * float(rates.user_share/100)
-										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
+										reservation_request.payment = payment
+										user_share = payment * share_rate
+										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + ") with " + discount + " discount (" + stars_to_use + " stars used). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + ".Rate: " + format(share_rate,'.2f')
 
 										buyerProfile = UserProfile.objects.get(user=user)
 										buyerProfile.stars_collected = buyerProfile.stars_collected - int(stars_to_use)
 										buyerProfile.save()
 
 									else:
-										reservation_request.payment = item.price * float(quantity)
-										user_share = (item.price * float(quantity)) * float(rates.user_share/100)
-										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + "."
+										payment = item.price * float(quantity)
+										reservation_request.payment = payment
+										user_share = payment * share_rate
+										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + ". Rate: " + format(share_rate,'.2f')
 
 
 									item.status = "Reserved"
