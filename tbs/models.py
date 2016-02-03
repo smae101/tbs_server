@@ -122,10 +122,10 @@ class RentedItem(models.Model):
 
 class Transaction(models.Model):
 	transaction_type = models.CharField(max_length=20)
-	item = models.ForeignKey(Item)
+	item_name = models.CharField(max_length=100, blank=True, null=True)
 	item_code = models.CharField(max_length=100, blank=True, null=True)
-	seller = models.ForeignKey(UserProfile,related_name="transactions_as_owner")
-	buyer = models.ForeignKey(UserProfile,related_name="transactions_as_buyer")
+	seller = models.CharField(max_length=100, blank=True, null=True)
+	buyer = models.CharField(max_length=100, blank=True, null=True)
 	date_claimed = models.DateTimeField()
 	total_payment = models.FloatField(default=0)
 	tbs_share = models.FloatField(default=0)

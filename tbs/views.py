@@ -602,18 +602,32 @@ class DeleteItemView(View):
 			admin = User.objects.get(is_staff=True)
 			
 			if item.status != "Pending":
-				reservation_requests = ReservationRequest.objects.filter(item=item)
-				for reservation in reservation_requests:
-					notif = Notification()
-					notif.target = reservation.buyer
-					notif.maker = admin
-					notif.item = reference_item
-					notif.item_code = reservation.item_code
-					notif.message = "Your reserved item, " + item.name + ", with item code " + reservation.item_code + " has been deleted by the owner."
-					notif.notification_type = "delete"
-					notif.status = "unread"
-					notif.save()
-					reservation.delete()
+				rented_items = RentedItem.objects.filter(item=item)
+
+				if rented_items is not None:
+					response = {
+						'status': 403,
+						'statusText': 'Unable to delete. Item is currenty being rented.',
+					}
+					return JsonResponse(response)
+				else:
+					reservation_requests = ReservationRequest.objects.filter(item=item)
+					for reservation in reservation_requests:
+
+						buyer_username = reservation.buyer.username
+						item_buyer = User.objects.get(username=buyer_username)
+
+						notif = Notification()
+						notif.target = item_buyer
+						notif.maker = admin
+						notif.item = reference_item
+						notif.item_code = reservation.item_code
+						notif.message = "Your reserved item, " + item.name + ", with item code " + reservation.item_code + " has been deleted by the owner."
+						notif.notification_type = "delete"
+						notif.status = "unread"
+						notif.save()
+						reservation.delete()
+
 
 			elif item.status == "Pending":
 				if item.purpose == "Sell" or item.purpose == "Rent":
