@@ -597,6 +597,7 @@ class DeleteItemView(View):
 		else:
 			item_owner = UserProfile.objects.get(user=user)
 			item = Item.objects.get(id=item_id, owner=item_owner)
+			reference_item = Item.objects.get(status="Deleted");
 
 			admin = User.objects.get(is_staff=True)
 			
@@ -606,7 +607,7 @@ class DeleteItemView(View):
 					notif = Notification()
 					notif.target = reservation.buyer
 					notif.maker = admin
-					notif.item = item
+					notif.item = reference_item
 					notif.item_code = reservation.item_code
 					notif.message = "Your reserved item, " + item.name + ", with item code " + reservation.item_code + " has been deleted by the owner."
 					notif.notification_type = "delete"
@@ -632,7 +633,7 @@ class DeleteItemView(View):
 			notif = Notification()
 			notif.target = admin
 			notif.maker = user
-			notif.item = item
+			notif.item = reference_item
 			notif.item_code = ""
 			notif.message = owner + " has deleted his/her " +  str_purpose + " item, " + item.name + "."
 			notif.notification_type = "delete"
