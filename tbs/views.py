@@ -679,6 +679,7 @@ class BuyItemView(View):
 					try:
 						item = Item.objects.get(id=item_id)
 						rates = Rate.objects.get(id=1)
+						
 						if item is not None:
 							if item.quantity >= int(quantity) and int(quantity) > 0:
 
@@ -720,7 +721,7 @@ class BuyItemView(View):
 										payment = item.price * float(quantity)
 										reservation_request.payment = payment
 										user_share = payment * share_rate
-										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + ". Rate: " + format(share_rate,'.2f')
+										message = buyer + " wants to buy your " + item.name + " (quantity = " + quantity + "). Your item code is " + str(new_item_code) + ". Your expected amount to be received is Php " + format(user_share,'.2f') + ". Rate: " + format(rates.user_share,'.2f')
 
 
 									item.status = "Reserved"
