@@ -45,7 +45,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Item
-		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'quantity', 'reserved_quantity', 'picture', 'stars_required','stars_to_use', 'date_approved'
+		fields = 'id','owner', 'name', 'description', 'category', 'status', 'purpose', 'price', 'quantity', 'reserved_quantity', 'picture', 'stars_required','stars_to_use', 'date_approved', 'rent_duration'
 
 	def get_date_approved(self, obj):
 		date = getattr(obj,'date_approved')
