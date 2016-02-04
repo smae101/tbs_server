@@ -29,4 +29,5 @@ urlpatterns = [
 	url(r'^notify_renter$', views.NotifyRenterView.as_view(), name='notify_renter'),
 	url(r'^check_expiration$', views.CheckExpirationView.as_view(), name='check_expiration'),
 	url(r'^admin_check_expiration$', views.AdminCheckExpirationView.as_view(), name='admin_check_expiration'),
+	url(r'^delete_category$', views.DeleteCategory.as_view(), name='delete_category'),
 ]

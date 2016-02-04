@@ -2290,3 +2290,29 @@ class AdminCheckExpirationView(View):
 
 	def get(self, request):
 		return render(request, 'adminCheckExpiration.html')
+
+
+class DeleteCategory(View):
+	def post(self, request):
+		print(request.body)
+
+		id = request.POST.get('id',None)
+
+		if id is None:
+			response = {
+				'status': 404,
+				'statusText': 'No id to refer to',
+			}
+			return JsonResponse(response)
+		else:
+			category = Category.objects.get(id=id)
+			category.delete()
+			response = {
+				'status': 403,
+				'statusText': 'Invalid username or password',
+			}
+
+			return JsonResponse(response)
+
+	def get(self, request):
+		return render(request, 'login.html')
