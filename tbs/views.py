@@ -2315,4 +2315,4 @@ class DeleteCategory(View):
 			return JsonResponse(response)
 
 	def get(self, request):
-		return render(request, 'login.html')
+		return render(request, 'deleteCategory.html')
