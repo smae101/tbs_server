@@ -1420,6 +1420,7 @@ class ReservedItemClaimedView(View):
 
 
 					target = User.objects.get(username=item.owner.user.username)
+					owner = UserProfile.objects.get(user=target)
 					maker = User.objects.get(is_staff=True)
 					buyer = UserProfile.objects.get(user=request.buyer)
 					rates = Rate.objects.get(id=1)
@@ -1457,7 +1458,7 @@ class ReservedItemClaimedView(View):
 						notif.save()
 
 	# only for rent and for sale item owners are given stars if item is claimed
-						owner = UserProfile.objects.get(user=target)
+						
 						owner.stars_collected = owner.stars_collected + stars_to_add
 						owner.save()
 					else:
