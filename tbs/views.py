@@ -1928,7 +1928,11 @@ class CheckExpirationView(View):
 				notif.notification_type = "expired"
 				notif.status = "unread"
 				notif.save()
+
+				expired_item = Item.objects.get(id=item_on_queue.item.id)
 				item_on_queue.delete()
+				expired_item.delete()
+
 
 
 			#for donated items
@@ -1944,7 +1948,10 @@ class CheckExpirationView(View):
 				notif.notification_type = "expired"
 				notif.status = "unread"
 				notif.save()
+
+				expired_item = Item.objects.get(id=donated_item.item.id)
 				donated_item.delete()
+				expired_item.delete()
 
 
 			#for rented items -->
@@ -2148,7 +2155,10 @@ class AdminCheckExpirationView(View):
 			notif.notification_type = "expired"
 			notif.status = "unread"
 			notif.save()
+
+			expired_item = Item.objects.get(id=item_on_queue.item.id)
 			item_on_queue.delete()
+			expired_item.delete()
 
 
 		#for donated items
@@ -2164,7 +2174,10 @@ class AdminCheckExpirationView(View):
 			notif.notification_type = "expired"
 			notif.status = "unread"
 			notif.save()
+
+			expired_item = Item.objects.get(id=donated_item.item.id)
 			donated_item.delete()
+			expired_item.delete()
 
 		#for rented items -->
 		rented_items = RentedItem.objects.filter(rent_expiration__lte = (datetime.now() + timedelta(days=1)))
