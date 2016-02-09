@@ -1852,6 +1852,7 @@ class CheckExpirationView(View):
 			admin = User.objects.get(is_staff=True)
 			userProfile = UserProfile.objects.get(user=user)
 			rates = Rate.objects.get(id=1)
+			reference_item = Item.objects.get(status="Deleted");
 
 			penalty_rate_per_day = rates.penalty_rate_per_day/100
 
@@ -1923,7 +1924,7 @@ class CheckExpirationView(View):
 				notif = Notification()
 				notif.target = item_on_queue.seller
 				notif.maker = admin
-				notif.item = item_on_queue.item
+				notif.item = reference_item
 				notif.message = "Your " + str_purpose + " item, " + item_on_queue.item.name + " has expired. You were not able to show it to the admin for its approval."
 				notif.notification_type = "expired"
 				notif.status = "unread"
@@ -1943,7 +1944,7 @@ class CheckExpirationView(View):
 				notif = Notification()
 				notif.target = donated_item.donor
 				notif.maker = admin
-				notif.item = donated_item.item
+				notif.item = reference_item
 				notif.message = "Your donated item, " + donated_item.item.name + " has expired. You were not able to show it to the admin for its approval."
 				notif.notification_type = "expired"
 				notif.status = "unread"
@@ -2082,6 +2083,7 @@ class CheckExpirationView(View):
 class AdminCheckExpirationView(View):
 	def post(self, request):
 		admin = User.objects.get(is_staff=True)
+		reference_item = Item.objects.get(status="Deleted");
 		print("Admin Checking expiration")
 		#for reserved items
 		reservation_request = ReservationRequest.objects.filter(request_expiration__lte = datetime.now(), status="Reserved")
@@ -2150,7 +2152,7 @@ class AdminCheckExpirationView(View):
 			notif = Notification()
 			notif.target = item_on_queue.seller
 			notif.maker = admin
-			notif.item = item_on_queue.item
+			notif.item = reference_item
 			notif.message = "Your " + str_purpose + " item, " + item_on_queue.item.name + " has expired. You were not able to show it to the admin for its approval."
 			notif.notification_type = "expired"
 			notif.status = "unread"
@@ -2169,7 +2171,7 @@ class AdminCheckExpirationView(View):
 			notif = Notification()
 			notif.target = donated_item.donor
 			notif.maker = admin
-			notif.item = donated_item.item
+			notif.item = reference_item
 			notif.message = "Your donated item, " + donated_item.item.name + " has expired. You were not able to show it to the admin for its approval."
 			notif.notification_type = "expired"
 			notif.status = "unread"
