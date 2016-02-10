@@ -2087,7 +2087,7 @@ class AdminCheckExpirationView(View):
 		admin = User.objects.get(is_staff=True)
 		rates = Rate.objects.get(id=1)
 		reference_item = Item.objects.get(status="Deleted");
-		penalty_rate_per_day = rates.penalty_rate_per_day/100
+		penalty_rate_per_day = float(rates.penalty_rate_per_day)/float(100)
 
 		print("Admin Checking expiration")
 		#for reserved items
@@ -2239,7 +2239,7 @@ class AdminCheckExpirationView(View):
 
 				elif hours_after >= 1 :
 					print("expired after an hour or more")
-					payment = rented_item.item.price * rented_item.quantity
+					payment = rented_item.item.price * float(rented_item.quantity)
 					if rented_item.notified == 2 or rented_item.notified == 3: #compute for the penalty only, no notification
 						rented_item.penalty = ((payment * penalty_rate_per_day)/24)*hours_after
 						rented_item.save()
@@ -2251,13 +2251,13 @@ class AdminCheckExpirationView(View):
 						notif.maker = admin
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
-						notif.message = "Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
+						notif.message = hours_after+" Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
 						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
 
 						rented_item.notified = 2
-						rented_item.penalty = ((payment * penalty_rate_per_day)/24)*hours_after
+						rented_item.penalty = ((payment * penalty_rate_per_day)/float(24))*float(hours_after)
 						rented_item.save()
 
 						print("For notifications and computation of penalty: " + str(rented_item.penalty) + ", hours = " + str(hours_after))
