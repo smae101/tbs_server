@@ -1863,6 +1863,7 @@ class CheckExpirationView(View):
 				print("Reserved Items: " + str(reservation.id))
 				reserved_item = reservation.item
 				reserved_item.quantity = reserved_item.quantity + reservation.quantity
+				reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 				reserved_item.save()
 
 				notif = Notification()
@@ -1883,6 +1884,7 @@ class CheckExpirationView(View):
 
 				reserved_item = reservation.item
 				reserved_item.quantity = reserved_item.quantity + reservation.quantity
+				reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 				reserved_item.save()
 
 # owner of donated item will not be notified that his item was not claimed
@@ -2091,6 +2093,7 @@ class AdminCheckExpirationView(View):
 			print("Reserved Items: " + str(reservation.id))
 			reserved_item = reservation.item
 			reserved_item.quantity = reserved_item.quantity + reservation.quantity
+			reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 			reserved_item.save()
 
 			notif = Notification()
@@ -2111,6 +2114,7 @@ class AdminCheckExpirationView(View):
 
 			reserved_item = reservation.item
 			reserved_item.quantity = reserved_item.quantity + reservation.quantity
+			reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 			reserved_item.save()
 
 # owner of donated item will not be notified that his item was not claimed
