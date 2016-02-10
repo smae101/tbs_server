@@ -2251,13 +2251,13 @@ class AdminCheckExpirationView(View):
 						notif.maker = admin
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
-						notif.message = hours_after+" Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
+						notif.message = str(hours_after)+" Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
 						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
 
 						rented_item.notified = 2
-						rented_item.penalty = ((payment * penalty_rate_per_day)/float(24))*float(hours_after)
+						rented_item.penalty = ((payment * penalty_rate_per_day)/24)*hours_after
 						rented_item.save()
 
 						print("For notifications and computation of penalty: " + str(rented_item.penalty) + ", hours = " + str(hours_after))
