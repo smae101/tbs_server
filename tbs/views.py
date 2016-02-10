@@ -2086,6 +2086,8 @@ class AdminCheckExpirationView(View):
 	def post(self, request):
 		admin = User.objects.get(is_staff=True)
 		reference_item = Item.objects.get(status="Deleted");
+		penalty_rate_per_day = rates.penalty_rate_per_day/100
+		
 		print("Admin Checking expiration")
 		#for reserved items
 		reservation_request = ReservationRequest.objects.filter(request_expiration__lte = datetime.now(), status="Reserved")
