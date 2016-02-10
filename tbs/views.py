@@ -1428,9 +1428,9 @@ class ReservedItemClaimedView(View):
 					user_share = request.payment * (float(rates.user_share)/float(100))
 					tbs_share = request.payment * (float(rates.tbs_share)/float(100))
 
-					rate_stars_to_add = rates.rate_of_added_stars_based_on_price/100
+					rate_stars_to_add = float(rates.rate_of_added_stars_based_on_price)/float(100)
 					stars_to_add = 0
-					stars_to_add = int((item.price*rate_stars_to_add)*request.quantity)
+					stars_to_add = int((item.price*rate_stars_to_add)*float(request.quantity))
 
 					if item.purpose == "Sell" or item.purpose == "Rent":
 						if item.purpose == 'Sell':
@@ -1558,7 +1558,7 @@ class AdminApproveDonationView(View):
 					item.category = category
 					item.save()
 
-					stars_to_add = float(item.stars_required) * (rates.rate_of_added_stars_based_on_stars_required/100)
+					stars_to_add = float(item.stars_required) * (float(rates.rate_of_added_stars_based_on_stars_required)/float(100))
 
 					target = User.objects.get(username=item.owner.user.username)
 					maker = User.objects.get(is_staff=True)
@@ -1854,7 +1854,7 @@ class CheckExpirationView(View):
 			rates = Rate.objects.get(id=1)
 			reference_item = Item.objects.get(status="Deleted");
 
-			penalty_rate_per_day = rates.penalty_rate_per_day/100
+			penalty_rate_per_day = float(rates.penalty_rate_per_day)/float(100)
 
 			print("Checking expiration")
 			#for reserved items
@@ -2251,7 +2251,7 @@ class AdminCheckExpirationView(View):
 						notif.maker = admin
 						notif.item = rented_item.item
 						notif.item_code = rented_item.item_code
-						notif.message = str(hours_after)+" Your rented item has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
+						notif.message = "Your rented item, " + rented_item.item.name + " with item code, " + rented_item.item_code +" has expired. Corresponding charges will apply every hour. Please return the item as soon as possible to avoid penalty."
 						notif.notification_type = "rentedItem"
 						notif.status = "unread"
 						notif.save()
