@@ -798,6 +798,7 @@ class BuyItemView(View):
 								'status': 404,
 								'statusText': 'Item not found',
 							}
+						return JsonResponse(response)
 			else:
 				response = {
 					'status': 404,
@@ -919,6 +920,7 @@ class RentItemView(View):
 								'status': 404,
 								'statusText': 'Item not found',
 							}
+						return JsonResponse(response)
 			else:
 				response = {
 					'status': 404,
@@ -1124,6 +1126,7 @@ class GetDonatedItemView(View):
 							'status': 404,
 							'statusText': 'Item not found',
 						}
+					return JsonResponse(response)
 			else:
 				response = {
 					'status': 404,
@@ -1284,6 +1287,7 @@ class AdminDisapproveItemView(View):
 						'status': 404,
 						'statusText': 'Item not found',
 					}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'disapproveItem.html')
@@ -1382,6 +1386,7 @@ class ReservedItemAvailableView(View):
 						'status': 404,
 						'statusText': 'Item not found',
 					}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'itemAvailable.html')
@@ -1514,6 +1519,7 @@ class ReservedItemClaimedView(View):
 						'status': 404,
 						'statusText': 'Item not found',
 					}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'itemClaimed.html')
@@ -1588,6 +1594,7 @@ class AdminApproveDonationView(View):
 						'status': 404,
 						'statusText': 'Item not found',
 					}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'approveDonation.html')
@@ -1645,6 +1652,7 @@ class AdminDisapproveDonationView(View):
 						'status': 404,
 						'statusText': 'Item not found',
 					}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'disapproveItem.html')
@@ -1738,6 +1746,7 @@ class ReturnRentedItemView(View):
 						'status': 404,
 						'statusText': 'Item not found',
 					}
+				return JsonResponse(response)
 
 	def get(self, request):
 		return render(request, 'itemReturned.html')
