@@ -82,14 +82,11 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class TransactionSerializer(serializers.ModelSerializer):
-	item = ItemSerializer(many=False)
-	buyer = UserProfileSerializer(many=False)
-	seller = UserProfileSerializer(many=False)
 	date_claimed = serializers.SerializerMethodField()
 
 	class Meta:
 		model = models.Transaction
-		fields = 'id','item', 'item_code', 'buyer', 'seller', 'date_claimed', 'total_payment', 'tbs_share', 'user_share'
+		fields = 'id','item_name', 'item_code', 'buyer', 'seller', 'date_claimed', 'total_payment', 'tbs_share', 'user_share'
 
 	def get_date_claimed(self, obj):
 		date = getattr(obj,'date_claimed')

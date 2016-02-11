@@ -1534,9 +1534,7 @@ class AdminApproveDonationView(View):
 		cat = request.POST.get('category', None);
 		status = 'Available'
 
-		print(cat)
-
-		if (item_id or request_id or stars) is None:
+		if (item_id or request_id or stars or cat) is None:
 			response = {
 				'status': 404,
 				'statusText': 'Missing data',
