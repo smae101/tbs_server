@@ -86,7 +86,7 @@ class TransactionSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = models.Transaction
-		fields = 'id','item_name', 'item_code', 'buyer', 'seller', 'date_claimed', 'total_payment', 'tbs_share', 'user_share'
+		fields = 'id', 'transaction_type', 'item_name', 'item_code', 'buyer', 'seller', 'date_claimed', 'total_payment', 'tbs_share', 'user_share'
 
 	def get_date_claimed(self, obj):
 		date = getattr(obj,'date_claimed')
