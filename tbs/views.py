@@ -637,11 +637,11 @@ class DeleteItemView(View):
 				request.delete()
 
 			if item.purpose == "Sell":
-				str_purpose = "for sale"
+				str_purpose = "item for sale"
 			elif item.purpose == "Rent":
-				str_purpose = "for rent"
+				str_purpose = "item for rent"
 			elif item.purpose == "Donate":
-				str_purpose = "donated"
+				str_purpose = "donated item"
 
 
 			notif = Notification()
@@ -649,7 +649,7 @@ class DeleteItemView(View):
 			notif.maker = user
 			notif.item = reference_item
 			notif.item_code = ""
-			notif.message = owner + " has deleted his/her " +  str_purpose + " item, " + item.name + "."
+			notif.message = owner + " has deleted his/her " +  str_purpose + ", " + item.name + "."
 			notif.notification_type = "delete"
 			notif.status = "unread"
 			notif.save()
@@ -958,11 +958,11 @@ class CancelReservedItemView(View):
 					buyerProfile.save()
 
 				if item.purpose == "Sell":
-					str_purpose = "for sale"
+					str_purpose = "item for sale"
 				elif item.purpose == "Rent":
-					str_purpose = "for rent"
+					str_purpose = "item for rent"
 				elif item.purpose == "Donate":
-					str_purpose = "donated"
+					str_purpose = "donated item"
 
 				item.stars_to_use = 0
 				item.quantity = item.quantity + reservation_request.quantity
@@ -976,7 +976,7 @@ class CancelReservedItemView(View):
 					notif_seller.target = User.objects.get(username=item.owner.user.username)
 					notif_seller.maker = user
 					notif_seller.item = item
-					notif_seller.message = buyer + " has canceled his/her reservation for your item " + str_purpose  + ", " + item.name + " with item_code " + reservation_request.item_code + ". You may now get your item at the TBS administrator's office."
+					notif_seller.message = buyer + " has canceled his/her reservation for your " + str_purpose  + ", " + item.name + " with item_code " + reservation_request.item_code + ". You may now get your item at the TBS administrator's office."
 					notif_seller.notification_type = "cancel"
 					notif_seller.status = "unread"
 					notif_seller.save()
@@ -1457,7 +1457,7 @@ class ReservedItemClaimedView(View):
 						notif.maker = maker
 						notif.item = item
 						notif.item_code = request.item_code
-						notif.message = "Your item " + str_purpose + ", " + item.name + " with item code " + request.item_code + " has been claimed. You may now claim your share of the total payment in the amount of " + format(user_share,'.2f') + " at the TBS admin's office."
+						notif.message = "Your item " + str_purpose + ", " + item.name + " with item code " + request.item_code + " has been claimed. You may now claim your share of the total payment in the amount of " + format(user_share,'.2f') + " at the TBS admin's office. You have gained " + str(stars_to_add) + " stars."
 						notif.notification_type = "sold"
 						notif.status = "unread"
 						notif.save()
@@ -1489,7 +1489,7 @@ class ReservedItemClaimedView(View):
 						notif.maker = maker
 						notif.item = item
 						notif.item_code = request.item_code
-						notif.message = "You have successfully rented the item, " + item.name + ". Please return it on or before " + expiry.strftime("%Y-%m-%d %H:%M:%S") + " to avoid penalty." 
+						notif.message = "You have successfully rented the item, " + item.name + ". Please return it on or before " + expiry.strftime("%Y-%m-%d %H:%M:%S") + " to avoid penalty. You have gained " + str(stars_to_add) + " stars from this transaction."
 						notif.notification_type = "sold"
 						notif.status = "unread"
 						notif.save()
@@ -1572,7 +1572,7 @@ class AdminApproveDonationView(View):
 					notif.maker = maker
 					notif.item = item
 					notif.item_code = ""
-					notif.message = "Admin approves your donated item, " + item.name + "."
+					notif.message = "Admin approves your donated item, " + item.name + ". You have gained " + str(int(stars_to_add) * item.quantity) + " stars."
 					notif.notification_type = "approve"
 					notif.status = "unread"
 					notif.save()
