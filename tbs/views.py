@@ -511,6 +511,7 @@ class EditItemView(View):
 		price = request.POST.get('price',None)
 		picture = request.POST.get('url', None)
 		quantity = request.POST.get('quantity',None)
+		rent_duration = request.POST.get('rent_duration', None)
 
 		user = User.objects.get(username=owner)
 		item_owner = UserProfile.objects.get(user=user)
@@ -539,12 +540,14 @@ class EditItemView(View):
 			item.description = description
 			item.category = Category.objects.get(category_name="Others")
 			item.quantity = quantity
-			if item.purpose == "Sell":
+			if item.purpose == "Sell" or  item.purpose ==  "Rent":
 				item.price = price
 			elif item.purpose == "Donate":
 				item.price = 0;
 			if picture is not None:
 				item.picture = picture
+			if item.purpose ==  "Rent":
+				item.rent_duration = rent_duration
 			item.stars_required = 0
 			item.save()
 
