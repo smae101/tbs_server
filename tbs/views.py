@@ -977,14 +977,24 @@ class CancelReservedItemView(View):
 
 # owner of donated item will not be notified anymore
 				if item.purpose == "Sell" or item.purpose == "Rent":
-					notif_seller = Notification()
-					notif_seller.target = User.objects.get(username=item.owner.user.username)
-					notif_seller.maker = user
-					notif_seller.item = item
-					notif_seller.message = buyer + " has canceled his/her reservation for your " + str_purpose  + ", " + item.name + " with item_code " + reservation_request.item_code + ". You may now get your item at the TBS administrator's office."
-					notif_seller.notification_type = "cancel"
-					notif_seller.status = "unread"
-					notif_seller.save()
+					if reservation_request.status == "Available":
+						notif_seller = Notification()
+						notif_seller.target = User.objects.get(username=item.owner.user.username)
+						notif_seller.maker = user
+						notif_seller.item = item
+						notif_seller.message = buyer + " has canceled his/her reservation for your " + str_purpose  + ", " + item.name + " with item_code " + reservation_request.item_code + ". You may now get your item at the TBS administrator's office."
+						notif_seller.notification_type = "cancel"
+						notif_seller.status = "unread"
+						notif_seller.save()
+					else:
+						notif_seller = Notification()
+						notif_seller.target = User.objects.get(username=item.owner.user.username)
+						notif_seller.maker = user
+						notif_seller.item = item
+						notif_seller.message = buyer + " has canceled his/her reservation for your " + str_purpose  + ", " + item.name + " with item_code " + reservation_request.item_code + "."
+						notif_seller.notification_type = "cancel"
+						notif_seller.status = "unread"
+						notif_seller.save()
 
 
 				notif_admin = Notification()
