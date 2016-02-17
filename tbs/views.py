@@ -1861,7 +1861,7 @@ class CheckExpirationView(View):
 			return JsonResponse(response)
 		else:
 			user = User.objects.get(username=username)
-			admin = User.objects.get(is_staff=True)[0]
+			admin = User.objects.filter(is_staff=True)[0]
 			userProfile = UserProfile.objects.get(user=user)
 			rates = Rate.objects.get(id=1)
 			reference_item = Item.objects.get(status="Deleted");
