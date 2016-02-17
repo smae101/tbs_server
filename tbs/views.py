@@ -2009,7 +2009,7 @@ class CheckExpirationView(View):
 
 					print("Hours after expiration: " + str(hours_after))
 
-					if hours_after == 0 and rented_item.notified is not 2:
+					if hours_after < 1 and rented_item.notified is not 2:
 						print("For expired at exactly datetime.now: " + str(rented_item.id))
 						notif = Notification()
 						notif.target = rented_item.renter
@@ -2242,7 +2242,7 @@ class AdminCheckExpirationView(View):
 
 				print("Hours after expiration: " + str(hours_after))
 
-				if hours_after == 0  and rented_item.notified is not 2:
+				if hours_after < 1  and rented_item.notified is not 2:
 					print("For expired at exactly datetime.now: " + str(rented_item.id))
 					notif = Notification()
 					notif.target = rented_item.renter
