@@ -313,7 +313,7 @@ class SellItemView(View):
 				approval_sell_request.save()
 
 
-				admin = User.objects.get(is_staff=True)
+				admin = User.objects.filter(is_staff=True)[0]
 				notif = Notification()
 				notif.target = admin
 				notif.maker = user
@@ -395,7 +395,7 @@ class ForRentItemView(View):
 				approval_sell_request.save()
 
 
-				admin = User.objects.get(is_staff=True)
+				admin = User.objects.filter(is_staff=True)[0]
 				notif = Notification()
 				notif.target = admin
 				notif.maker = user
@@ -474,7 +474,7 @@ class DonateItemView(View):
 				approval_donate_request.save()
 
 
-				admin = User.objects.get(is_staff=True)
+				admin = User.objects.filter(is_staff=True)[0]
 				notif = Notification()
 				notif.target = admin
 				notif.maker = user
@@ -562,7 +562,7 @@ class EditItemView(View):
 			approval_request.item = item
 			approval_request.save()
 
-			admin = User.objects.get(username="admin")
+			admin = User.objects.filter(is_staff=True)[0]
 			notif = Notification()
 			notif.target = admin
 			notif.maker = user
@@ -604,7 +604,7 @@ class DeleteItemView(View):
 			item = Item.objects.get(id=item_id, owner=item_owner)
 			reference_item = Item.objects.get(status="Deleted");
 
-			admin = User.objects.get(is_staff=True)
+			admin = User.objects.filter(is_staff=True)[0]
 			
 			if item.status != "Pending":
 				rented_items = RentedItem.objects.filter(item=item)
@@ -756,7 +756,7 @@ class BuyItemView(View):
 									reservation_request.save()
 
 									notif_admin = Notification()
-									notif_admin.target = User.objects.get(is_staff=True)
+									notif_admin.target = User.objects.filter(is_staff=True)[0]
 									notif_admin.maker = user
 									notif_admin.item = item
 									notif_admin.item_code = str(new_item_code)
@@ -878,7 +878,7 @@ class RentItemView(View):
 									reservation_request.save()
 
 									notif_admin = Notification()
-									notif_admin.target = User.objects.get(is_staff=True)
+									notif_admin.target = admin = User.objects.filter(is_staff=True)[0]
 									notif_admin.maker = user
 									notif_admin.item = item
 									notif_admin.item_code = str(new_item_code)
@@ -988,7 +988,7 @@ class CancelReservedItemView(View):
 
 
 				notif_admin = Notification()
-				notif_admin.target = User.objects.get(is_staff=True)
+				notif_admin.target = User.objects.filter(is_staff=True)[0]
 				notif_admin.maker = user
 				notif_admin.item = item
 				notif_admin.item_code = reservation_request.item_code
@@ -1078,7 +1078,7 @@ class GetDonatedItemView(View):
 									reservation_request.save()
 
 									notif_admin = Notification()
-									notif_admin.target = User.objects.get(is_staff=True)
+									notif_admin.target = User.objects.filter(is_staff=True)[0]
 									notif_admin.maker = user
 									notif_admin.item = item
 									notif_admin.item_code = str(new_item_code)
@@ -1191,7 +1191,7 @@ class AdminApproveItemView(View):
 					item.save()
 
 					target = User.objects.get(username=item.owner.user.username)
-					maker = User.objects.get(is_staff=True)
+					maker = User.objects.filter(is_staff=True)[0]
 
 					notif = Notification()
 					notif.target = target
@@ -1268,7 +1268,7 @@ class AdminDisapproveItemView(View):
 					item.save()
 
 					target = User.objects.get(username=item.owner.user.username)
-					maker = User.objects.get(is_staff=True)
+					maker = User.objects.filter(is_staff=True)[0]
 
 					notif = Notification()
 					notif.target = target
@@ -1359,7 +1359,7 @@ class ReservedItemAvailableView(View):
 					return JsonResponse(response)
 				else:
 					target = User.objects.get(username=request.buyer.username)
-					maker = User.objects.get(is_staff=True)
+					maker = User.objects.filter(is_staff=True)[0]
 
 					if item.purpose == "Sell" or item.purpose == "Rent":
 						message = "Your reserved item, " + item.name + " (quantity = " + str(request.quantity) + ") with item code " + request.item_code + " is now available. Please claim it at the TBS administrator's office. Don't forget to bring the payment for the item in the amount of Php " + format(request.payment,'.2f') + "."
@@ -1431,7 +1431,7 @@ class ReservedItemClaimedView(View):
 
 					target = User.objects.get(username=item.owner.user.username)
 					owner = UserProfile.objects.get(user=target)
-					maker = User.objects.get(is_staff=True)
+					maker = User.objects.filter(is_staff=True)[0]
 					buyer = UserProfile.objects.get(user=request.buyer)
 					rates = Rate.objects.get(id=1)
 
@@ -1570,7 +1570,7 @@ class AdminApproveDonationView(View):
 					stars_to_add = float(item.stars_required) * (float(rates.rate_of_added_stars_based_on_stars_required)/float(100))
 
 					target = User.objects.get(username=item.owner.user.username)
-					maker = User.objects.get(is_staff=True)
+					maker = User.objects.filter(is_staff=True)[0]
 
 					notif = Notification()
 					notif.target = target
@@ -1631,7 +1631,7 @@ class AdminDisapproveDonationView(View):
 					item.save()
 
 					target = User.objects.get(username=item.owner.user.username)
-					maker = User.objects.get(is_staff=True)
+					maker = User.objects.filter(is_staff=True)[0]
 
 					notif = Notification()
 					notif.target = target
@@ -1689,7 +1689,7 @@ class ReturnRentedItemView(View):
 				else:
 					renter = UserProfile.objects.get(user=request.renter)
 					target = User.objects.get(username=item.owner.user.username)
-					maker = User.objects.get(is_staff=True)
+					maker = User.objects.filter(is_staff=True)[0]
 					rates = Rate.objects.get(id=1)
 
 					user_share = 0
@@ -1778,7 +1778,7 @@ class NotifyRenterView(View):
 				}
 				return JsonResponse(response)
 			else:
-				maker = User.objects.get(is_staff=True)
+				maker = User.objects.filter(is_staff=True)[0]
 
 				notif = Notification()
 				notif.target = request.renter
@@ -2096,7 +2096,7 @@ class CheckExpirationView(View):
 
 class AdminCheckExpirationView(View):
 	def post(self, request):
-		admin = User.objects.get(is_staff=True)
+		admin = User.objects.filter(is_staff=True)[0]
 		rates = Rate.objects.get(id=1)
 		reference_item = Item.objects.get(status="Deleted");
 		penalty_rate_per_day = float(rates.penalty_rate_per_day)/float(100)
