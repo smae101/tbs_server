@@ -976,6 +976,7 @@ class CancelReservedItemView(View):
 				item.save()
 
 # owner of donated item will not be notified anymore
+				item = Item.objects.get(id=item_id)
 				if item.purpose == "Sell" or item.purpose == "Rent":
 					if reservation_request.status == "Available":
 						notif_seller = Notification()
@@ -1002,7 +1003,7 @@ class CancelReservedItemView(View):
 				notif_admin.maker = user
 				notif_admin.item = item
 				notif_admin.item_code = reservation_request.item_code
-				notif_admin.message = buyer + " has canceled his/her reservation for " + item.name + " with item_code " + reservation_request.item_code
+				notif_admin.message = buyer + " has canceled his/her reservation for " + item.name + " with item_code " + reservation_request.item_code + "."
 				notif_admin.notification_type = "cancel"
 				notif_admin.status = "unread"
 				notif_admin.save()
