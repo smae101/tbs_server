@@ -68,6 +68,11 @@ class RegisterView(View):
 					'status': 401,
 					'statusText': 'Username already exists',
 				}
+			except DataError:
+				response = {
+					'status': 401,
+					'statusText': 'Username too long.',
+				}
 			
 			return JsonResponse(response)
 		else:
