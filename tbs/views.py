@@ -976,7 +976,6 @@ class CancelReservedItemView(View):
 				item.save()
 
 # owner of donated item will not be notified anymore
-				item = Item.objects.get(id=item_id)
 				if item.purpose == "Sell" or item.purpose == "Rent":
 					if reservation_request.status == "Available":
 						notif_seller = Notification()
