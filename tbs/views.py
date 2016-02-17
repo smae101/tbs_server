@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.db.utils import IntegrityError
+from django.db.utils import IntegrityError, DataError
 from django.db.models import Sum
 from django.http import JsonResponse
 from django.shortcuts import render
