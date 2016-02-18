@@ -728,7 +728,7 @@ class BuyItemView(View):
 										elif int(stars_to_use) == 150:
 											discount = "15%"
 
-										discounted_price = item.price-(item.price * (int(stars_to_use)/1000))
+										discounted_price = item.price-(item.price * (float(stars_to_use)/float(1000)))
 										payment = discounted_price * float(quantity)
 
 										reservation_request.stars_to_use = int(stars_to_use)
