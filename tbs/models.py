@@ -62,7 +62,7 @@ class Item(models.Model):
 
 class ApprovalSellRequest(models.Model):
 	def expiry():
-		return datetime.now() + timedelta(days=3)
+		return datetime.now() + timedelta(days=4)
 
 	seller = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
@@ -74,7 +74,7 @@ class ApprovalSellRequest(models.Model):
 
 class ApprovalDonateRequest(models.Model):
 	def expiry():
-		return datetime.now() + timedelta(days=3)
+		return datetime.now() + timedelta(days=4)
 
 	donor = models.ForeignKey(User)
 	item = models.OneToOneField(Item)
@@ -87,7 +87,7 @@ class ApprovalDonateRequest(models.Model):
 
 class ReservationRequest(models.Model):
 	def expiry():
-		return datetime.now() + timedelta(days=3)
+		return datetime.now() + timedelta(days=4)
 
 	buyer = models.ForeignKey(User)
 	item = models.ForeignKey(Item)
@@ -105,7 +105,7 @@ class ReservationRequest(models.Model):
 
 class RentedItem(models.Model):
 	def expiry():
-		return datetime.now() + timedelta(days=3)
+		return datetime.now() + timedelta(days=4)
 		
 	renter = models.ForeignKey(User)
 	item = models.ForeignKey(Item)
@@ -176,8 +176,8 @@ class ItemCode(models.Model):
 
 
 class Rate(models.Model):
-	tbs_share = models.IntegerField(default=0) #30%
-	user_share = models.IntegerField(default=0) #70%
+	tbs_share = models.IntegerField(default=0) #10%
+	user_share = models.IntegerField(default=0) #90%
 	penalty_rate_per_day = models.IntegerField(default=0)
 	rate_of_added_stars_based_on_price = models.IntegerField(default=0) #20%
 	rate_of_added_stars_based_on_stars_required = models.IntegerField(default=0) #10%
