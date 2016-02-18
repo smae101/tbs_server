@@ -1347,7 +1347,7 @@ class AddCategoryView(View):
 
 class ReservedItemAvailableView(View):
 	def post(self, request):
-		expiry = datetime.now() + timedelta(days=3)
+		expiry = datetime.now() + timedelta(days=4)
 
 		item_id = request.POST.get('item_id',None)
 		request_id = request.POST.get('request_id',None)
@@ -1489,7 +1489,7 @@ class ReservedItemClaimedView(View):
 
 
 	# for recording of rented items
-					expiry = datetime.now() + timedelta(days=item.rent_duration)
+					expiry = datetime.now() + timedelta(days=(item.rent_duration+1))
 
 					if item.purpose == 'Rent':
 						rentedItem =  RentedItem()
