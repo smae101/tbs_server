@@ -1087,6 +1087,7 @@ class GetDonatedItemView(View):
 									reservation_request.item = item
 									reservation_request.quantity = quantity
 									reservation_request.item_code = str(new_item_code)
+									reservation_request.stars_to_use = (item.stars_required * int(quantity))
 									reservation_request.status = "Reserved"
 									reservation_request.save()
 
@@ -1886,10 +1887,18 @@ class CheckExpirationView(View):
 			reservation_request = ReservationRequest.objects.filter(buyer=user, request_expiration__lte = datetime.now(), status="Reserved")
 			for reservation in reservation_request:
 				print("Reserved Items: " + str(reservation.id))
+
+				item_receiver = UserProfile.objects.get(user=reservation.buyer)
+
 				reserved_item = reservation.item
 				reserved_item.quantity = reserved_item.quantity + reservation.quantity
 				reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 				reserved_item.save()
+
+				if reservation_request.stars_to_use != 0:
+					item_receiver.stars_collected = item_receiver.stars_collected + reservation_request.stars_to_use
+					item_receiver.save()
+
 
 				notif = Notification()
 				notif.target = reservation.buyer
@@ -1907,10 +1916,16 @@ class CheckExpirationView(View):
 			for reservation in reservation_request:
 				print("For Claiming Items: " + str(reservation.id))
 
+				item_receiver = UserProfile.objects.get(user=reservation.buyer)
+
 				reserved_item = reservation.item
 				reserved_item.quantity = reserved_item.quantity + reservation.quantity
 				reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 				reserved_item.save()
+
+				if reservation_request.stars_to_use != 0:
+					item_receiver.stars_collected = item_receiver.stars_collected + reservation_request.stars_to_use
+					item_receiver.save()
 
 # owner of donated item will not be notified that his item was not claimed
 				if reserved_item.purpose == "Sell" or reserved_item.purpose == "Rent":
@@ -2119,10 +2134,17 @@ class AdminCheckExpirationView(View):
 		reservation_request = ReservationRequest.objects.filter(request_expiration__lte = datetime.now(), status="Reserved")
 		for reservation in reservation_request:
 			print("Reserved Items: " + str(reservation.id))
+
+			item_receiver = UserProfile.objects.get(user=reservation.buyer)
+
 			reserved_item = reservation.item
 			reserved_item.quantity = reserved_item.quantity + reservation.quantity
 			reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 			reserved_item.save()
+
+			if reservation_request.stars_to_use != 0:
+					item_receiver.stars_collected = item_receiver.stars_collected + reservation_request.stars_to_use
+					item_receiver.save()
 
 			notif = Notification()
 			notif.target = reservation.buyer
@@ -2140,10 +2162,16 @@ class AdminCheckExpirationView(View):
 		for reservation in reservation_request:
 			print("For Claiming Items: " + str(reservation.id))
 
+			item_receiver = UserProfile.objects.get(user=reservation.buyer)
+
 			reserved_item = reservation.item
 			reserved_item.quantity = reserved_item.quantity + reservation.quantity
 			reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 			reserved_item.save()
+
+			if reservation_request.stars_to_use != 0:
+					item_receiver.stars_collected = item_receiver.stars_collected + reservation_request.stars_to_use
+					item_receiver.save()
 
 # owner of donated item will not be notified that his item was not claimed
 			if reserved_item.purpose == "Sell" or reserved_item.purpose == "Rent":
