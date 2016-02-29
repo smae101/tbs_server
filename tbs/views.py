@@ -1895,8 +1895,8 @@ class CheckExpirationView(View):
 				reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 				reserved_item.save()
 
-				if reservation_request.stars_to_use != 0:
-					item_receiver.stars_collected = item_receiver.stars_collected + reservation_request.stars_to_use
+				if reservation.stars_to_use != 0:
+					item_receiver.stars_collected = item_receiver.stars_collected + reservation.stars_to_use
 					item_receiver.save()
 
 
@@ -1923,8 +1923,8 @@ class CheckExpirationView(View):
 				reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 				reserved_item.save()
 
-				if reservation_request.stars_to_use != 0:
-					item_receiver.stars_collected = item_receiver.stars_collected + reservation_request.stars_to_use
+				if reservation.stars_to_use != 0:
+					item_receiver.stars_collected = item_receiver.stars_collected + reservation.stars_to_use
 					item_receiver.save()
 
 # owner of donated item will not be notified that his item was not claimed
@@ -2142,8 +2142,8 @@ class AdminCheckExpirationView(View):
 			reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 			reserved_item.save()
 
-			if reservation_request.stars_to_use != 0:
-					item_receiver.stars_collected = item_receiver.stars_collected + reservation_request.stars_to_use
+			if reservation.stars_to_use != 0:
+					item_receiver.stars_collected = item_receiver.stars_collected + reservation.stars_to_use
 					item_receiver.save()
 
 			notif = Notification()
@@ -2169,8 +2169,8 @@ class AdminCheckExpirationView(View):
 			reserved_item.reserved_quantity = reserved_item.reserved_quantity - reservation.quantity
 			reserved_item.save()
 
-			if reservation_request.stars_to_use != 0:
-					item_receiver.stars_collected = item_receiver.stars_collected + reservation_request.stars_to_use
+			if reservation.stars_to_use != 0:
+					item_receiver.stars_collected = item_receiver.stars_collected + reservation.stars_to_use
 					item_receiver.save()
 
 # owner of donated item will not be notified that his item was not claimed
