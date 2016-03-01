@@ -1735,7 +1735,7 @@ class ReturnRentedItemView(View):
 					transaction.item_name = item.name
 					transaction.item_code = request.item_code
 					transaction.seller = item.owner.user.username
-					transaction.buyer = renter.user.username
+					transaction.buyer = user_renter.user.username
 					transaction.date_claimed = datetime.now()
 					transaction.total_payment = request.penalty
 					transaction.user_share = user_share
