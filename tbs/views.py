@@ -1742,16 +1742,17 @@ class ReturnRentedItemView(View):
 					transaction.tbs_share = tbs_share
 					transaction.save()
 
-					request.delete()
 					
-					expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now())
-					if expired_rented:
+					expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now(), renter=renter)
+					if expired_rented is not None:
 						renter.status = "blocked"
 					else:
 						renter.status = "active"
 
 					renter.save()
 
+
+					request.delete()
 
 					response = {
 						'status': 200,
