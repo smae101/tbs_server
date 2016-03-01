@@ -1744,10 +1744,10 @@ class ReturnRentedItemView(View):
 
 					
 					#expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now(), renter=request.renter)
-					if RentedItem.objects.filter(renter=request.renter, rent_expiration__lte = datetime.now()).exists():
-						user_renter.status = "blocked"
-					else:
-						user_renter.status = "active"
+					#if RentedItem.objects.filter(renter=request.renter, rent_expiration__lte = datetime.now()).exists():
+					#	user_renter.status = "blocked"
+					#else:
+					user_renter.status = "active"
 
 
 					user_renter.save()
