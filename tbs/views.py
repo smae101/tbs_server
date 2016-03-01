@@ -1743,7 +1743,7 @@ class ReturnRentedItemView(View):
 					transaction.save()
 
 					
-					expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now(), renter=renter)
+					expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now(), renter=request.renter)
 					if expired_rented is not None:
 						renter.status = "blocked"
 					else:
