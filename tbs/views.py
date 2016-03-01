@@ -1701,7 +1701,7 @@ class ReturnRentedItemView(View):
 					}
 					return JsonResponse(response)
 				else:
-					renter = UserProfile.objects.get(user=request.renter)
+					user_renter = UserProfile.objects.get(user=request.renter)
 					target = User.objects.get(username=item.owner.user.username)
 					maker = User.objects.filter(is_staff=True)[0]
 					rates = Rate.objects.get(id=1)
@@ -1744,13 +1744,13 @@ class ReturnRentedItemView(View):
 
 					
 					#expired_rented = RentedItem.objects.filter(rent_expiration__lte = datetime.now(), renter=request.renter)
-					if RentedItem.objects.filter(rent_expiration__lte = datetime.now(), renter=request.renter).exists():
-						renter.status = "blocked"
+					if RentedItem.objects.filter(renter=request.renter, rent_expiration__lte = datetime.now()).exists():
+						user_renter.status = "blocked"
 					else:
-						renter.status = "active"
+						user_renter.status = "active"
 
-					renter.save()
 
+					user_renter.save()
 
 					request.delete()
 
