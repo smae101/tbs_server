@@ -541,7 +541,8 @@ class EditItemView(View):
 			item.category = Category.objects.get(category_name="Others")
 			item.quantity = quantity
 			if item.purpose == "Sell" or  item.purpose ==  "Rent":
-				item.price = price
+				if price is not None:
+					item.price = float(price)
 			elif item.purpose == "Donate":
 				item.price = 0;
 			if picture is not None:
